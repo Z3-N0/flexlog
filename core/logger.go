@@ -4,7 +4,7 @@ import "time"
 
 type Level int8
 
-const(
+const (
 	LevelDisabled Level = iota - 1
 	LevelTrace
 	LevelDebug
@@ -14,9 +14,8 @@ const(
 	LevelFatal
 )
 
-
-func(l Level) String() string{
-	switch l{
+func (l Level) String() string {
+	switch l {
 	case LevelDisabled:
 		return "DISABLED"
 	case LevelTrace:
@@ -36,15 +35,14 @@ func(l Level) String() string{
 	}
 }
 
-type Entry struct{
-	Level Level
-	Message string
+type Entry struct {
+	Level     Level
+	Message   string
 	Timestamp time.Time
-	Fields map[string]any
+	Fields    map[string]any
 	ServiceID string
-	TraceID string
+	TraceID   string
 }
-
 
 func NewEntry(level Level, msg string) Entry {
 	return Entry{

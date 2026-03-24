@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-func TestLevelString(t *testing.T){
-	tests := []struct{
-		level Level
+func TestLevelString(t *testing.T) {
+	tests := []struct {
+		level    Level
 		expected string
 	}{
 		{LevelDisabled, "DISABLED"},
@@ -47,7 +47,6 @@ func TestNewEntry(t *testing.T) {
 		t.Errorf("Fields not working correctly")
 	}
 }
-
 
 func TestLevelOrdering(t *testing.T) {
 	if LevelDisabled >= LevelTrace {
