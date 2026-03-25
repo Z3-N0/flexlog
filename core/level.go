@@ -5,12 +5,12 @@ type Level int8
 
 const (
 	LevelDisabled Level = iota - 1 // LevelDisabled silences all log output
-	LevelTrace                      // LevelTrace is the most verbose level
-	LevelDebug                      // LevelDebug is for development details
-	LevelInfo                       // LevelInfo is for general operational messages
-	LevelWarn                       // LevelWarn is for non-critical problems
-	LevelError                      // LevelError is for failures that need attention
-	LevelFatal                      // LevelFatal logs and then terminates the program
+	LevelTrace                     // LevelTrace is the most verbose level
+	LevelDebug                     // LevelDebug is for development details
+	LevelInfo                      // LevelInfo is for general operational messages
+	LevelWarn                      // LevelWarn is for non-critical problems
+	LevelError                     // LevelError is for failures that need attention
+	LevelFatal                     // LevelFatal logs and then terminates the program
 )
 
 // String returns the human-readable name of the level.
