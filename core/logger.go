@@ -6,6 +6,8 @@ import (
 	"maps"
 	"os"
 	"sync"
+
+	"github.com/Z3-N0/flexlog/formatter"
 )
 
 // Context key is defined as its own type to avoid collision with other packages.
@@ -103,8 +105,19 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 		entry.Fields[key] = keysAndValues[i+1]
 	}
 
+	out, err := formatter.Format(entry.Level.String(),
+		entry.Timestamp,
+		entry.TraceID,
+		entry.Message,
+		entry.Fields)
+	if err != nil {
+		// formatter bug should never silently drop a log line
+		out = []byte(`{"level":"ERROR","msg":"flexlog: formatter error"}`)
+	}
+
 	l.mu.Lock()
-	fmt.Fprintf(os.Stdout, "[%s] %s %v\n", entry.Level, entry.Message, entry.Fields)
+	os.Stdout.Write(out)
+	os.Stdout.Write([]byte{'\n'})
 	l.mu.Unlock()
 }
 
