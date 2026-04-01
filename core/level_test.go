@@ -68,7 +68,7 @@ func TestNewEntry(t *testing.T) {
 		t.Errorf("timestamp %v is outside expected range", e.Timestamp)
 	}
 
-	// this would panic if Fields is nil — the test itself proves it is initialized
+	// this would panic if Fields is nil; the test itself proves it is initialized
 	e.Fields["key"] = "value"
 	if e.Fields["key"] != "value" {
 		t.Errorf("Fields not working correctly")
@@ -103,7 +103,7 @@ func TestNewWithLevelDisabled(t *testing.T) {
 }
 
 func TestLoggerLevelFiltering(t *testing.T) {
-	// count how many times exit is called — should be zero we use this trick to verify Fatal doesn't fire unexpectedly
+	// count how many times exit is called, should be zero we use this trick to verify Fatal doesn't fire unexpectedly
 	logged := 0
 	ctx := context.Background()
 
@@ -136,7 +136,7 @@ func TestLoggerWith(t *testing.T) {
 
 	// parent should be unmodified
 	if _, ok := l.fields["service"]; ok {
-		t.Error("With() modified the parent logger — it should not")
+		t.Error("With() modified the parent logger, it should not")
 	}
 }
 
@@ -155,7 +155,7 @@ func TestLoggerWithInheritsParentFields(t *testing.T) {
 
 	// parent should only have its own field
 	if _, ok := parent.fields["request_id"]; ok {
-		t.Error("child's With() modified the parent — it should not")
+		t.Error("child's With() modified the parent, it should not")
 	}
 }
 

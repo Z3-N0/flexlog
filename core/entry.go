@@ -3,7 +3,7 @@ package core
 import "time"
 
 // Entry represents a single log event.
-// This is the core data structure that flows through the entire system —
+// This is the core data structure that flows through the entire system
 // created by the Logger, formatted by the Formatter, written by the Sink.
 type Entry struct {
 	Level     Level          // severity of the log event
