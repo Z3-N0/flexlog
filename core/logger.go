@@ -96,7 +96,9 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 	}
 
 	entry := NewEntry(level, msg)
-	entry.TraceID = TraceIDFromContext(ctx)
+	if id := TraceIDFromContext(ctx); id != "" {
+		entry.TraceID = id
+	}
 
 	maps.Copy(entry.Fields, l.fields)
 
