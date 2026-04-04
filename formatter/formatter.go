@@ -26,7 +26,9 @@ func Format(level string, ts time.Time, traceID string, msg string, fields map[s
 	writeStringField(buf, "level", level, true)
 	buf.WriteByte(',')
 	writeInt(buf, "ts", ts.UnixMilli())
-	writeStringField(buf, "trace_id", traceID, false)
+	if traceID != "" {
+		writeStringField(buf, "trace_id", traceID, false)
+	}
 	writeStringField(buf, "msg", msg, false)
 
 	// dynamic fields last
@@ -69,7 +71,7 @@ func writeStringField(buf *bytes.Buffer, key, val string, first bool) {
 
 func writeString(buf *bytes.Buffer, key, val string) {
 	buf.WriteByte('"')
-	buf.WriteString(key)
+	writeEscaped(buf, key)
 	buf.WriteString(`":"`)
 	writeEscaped(buf, val)
 	buf.WriteByte('"')
@@ -77,7 +79,7 @@ func writeString(buf *bytes.Buffer, key, val string) {
 
 func writeInt(buf *bytes.Buffer, key string, val int64) {
 	buf.WriteByte('"')
-	buf.WriteString(key)
+	writeEscaped(buf, key)
 	buf.WriteString(`":`)
 	// Use a stack-allocated byte slice to avoid heap allocation
 	var b [20]byte
@@ -86,7 +88,7 @@ func writeInt(buf *bytes.Buffer, key string, val int64) {
 
 func writeFloat(buf *bytes.Buffer, key string, val float64) {
 	buf.WriteByte('"')
-	buf.WriteString(key)
+	writeEscaped(buf, key)
 	buf.WriteString(`":`)
 	var b [32]byte
 	buf.Write(strconv.AppendFloat(b[:0], val, 'f', -1, 64))
@@ -94,7 +96,7 @@ func writeFloat(buf *bytes.Buffer, key string, val float64) {
 
 func writeBool(buf *bytes.Buffer, key string, val bool) {
 	buf.WriteByte('"')
-	buf.WriteString(key)
+	writeEscaped(buf, key)
 	buf.WriteString(`":`)
 	if val {
 		buf.WriteString("true")

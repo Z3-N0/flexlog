@@ -70,6 +70,15 @@ newline`
 	}
 }
 
+func TestFormatKeyEscaping(t *testing.T) {
+	fields := map[string]any{`key"with"quotes`: "val"}
+	got, _ := Format("INFO", time.Now(), "", "msg", fields)
+	var parsed map[string]any
+	if err := json.Unmarshal(got, &parsed); err != nil {
+		t.Errorf("Key with quotes produced invalid JSON: %s", got)
+	}
+}
+
 func TestFormatEmptyFields(t *testing.T) {
 	// Ensure that when fields is nil or empty, we don't have a trailing comma error
 	got, err := Format("INFO", time.Now(), "id", "msg", nil)
