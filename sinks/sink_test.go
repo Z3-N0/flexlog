@@ -163,12 +163,12 @@ func TestWriterSinkAllFieldTypes(t *testing.T) {
 	s := sinks.NewWriterSink(&buf)
 
 	fields := map[string]any{
-		"string":  "val",
-		"int":     int(10),
-		"int64":   int64(20),
-		"float":   3.14,
-		"bool":    false,
-		"custom":  []int{1, 2},
+		"string": "val",
+		"int":    int(10),
+		"int64":  int64(20),
+		"float":  3.14,
+		"bool":   false,
+		"custom": []int{1, 2},
 	}
 
 	if err := s.Write("DEBUG", time.Now().UnixMilli(), "", "test", fields); err != nil {

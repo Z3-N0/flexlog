@@ -29,12 +29,13 @@ func TraceIDFromContext(ctx context.Context) string {
 
 // This is the structure of all log entries. Safe to use from multiple goroutines simultaneously, the mutex ensures output lines never interleave.
 type Logger struct {
-	mu       sync.Mutex     // protects writes to all sinks
-	minLevel Level          // entries below this level are silently dropped
-	fields   map[string]any // fields that appear on every entry from this logger
-	exit     func(int)      // defaults to os.Exit, overridable in tests
-	sinks    []sinks.Sink   // destinations this logger writes to
-	timeFmt  TimeFormat     // controls how timestamps are serialized
+	mu        sync.Mutex     // protects writes to all sinks
+	minLevel  Level          // entries below this level are silently dropped
+	fields    map[string]any // fields that appear on every entry from this logger
+	exit      func(int)      // defaults to os.Exit, overridable in tests
+	sinks     []sinks.Sink   // destinations this logger writes to
+	timeFmt   TimeFormat     // controls how timestamps are serialized
+	fatalHook FatalHook      // controls how fatal call behaves
 }
 
 // This is the functional options pattern it lets New() have defaults while still allowing customization.
@@ -58,6 +59,13 @@ func WithSink(s sinks.Sink) Option {
 func WithTimeFormat(fmt TimeFormat) Option {
 	return func(l *Logger) {
 		l.timeFmt = fmt
+	}
+}
+
+// WithFatalHook controls what happens after a Fatal log entry is written. Defaults to FatalHookExit.
+func WithFatalHook(hook FatalHook) Option {
+	return func(l *Logger) {
+		l.fatalHook = hook
 	}
 }
 
@@ -90,11 +98,12 @@ func New(opts ...Option) *Logger {
 // Keys and values must alternate: With("service", "api", "env", "prod").
 func (l *Logger) With(keysAndValues ...any) *Logger {
 	child := &Logger{
-		minLevel: l.minLevel,
-		fields:   make(map[string]any, len(l.fields)+len(keysAndValues)/2),
-		exit:     l.exit, // child inherits the same exit function
-		sinks:    l.sinks,
-		timeFmt:  l.timeFmt,
+		minLevel:  l.minLevel,
+		fields:    make(map[string]any, len(l.fields)+len(keysAndValues)/2),
+		exit:      l.exit, // child inherits the same exit function
+		sinks:     l.sinks,
+		timeFmt:   l.timeFmt,
+		fatalHook: l.fatalHook,
 	}
 	// Carry all fields from the parent into the child.
 	maps.Copy(child.fields, l.fields)
@@ -173,5 +182,12 @@ func (l *Logger) Error(ctx context.Context, msg string, keysAndValues ...any) {
 // Fatal logs the entry and immediately terminates the program. Use only for unrecoverable failures.
 func (l *Logger) Fatal(ctx context.Context, msg string, keysAndValues ...any) {
 	l.log(ctx, LevelFatal, msg, keysAndValues...)
-	l.exit(1)
+	switch l.fatalHook {
+	case FatalHookPanic:
+		panic("flexlog: fatal")
+	case FatalHookNoop:
+		// do nothing
+	default:
+		l.exit(1)
+	}
 }

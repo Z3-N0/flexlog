@@ -10,6 +10,7 @@ type Logger = core.Logger
 type Level = core.Level
 type Option = core.Option
 type TimeFormat = core.TimeFormat
+type FatalHook = core.FatalHook
 
 // levels
 const (
@@ -31,6 +32,13 @@ const (
 	TimeKitchen     = core.TimeKitchen
 )
 
+// fatal hook options
+const (
+	FatalHookExit  = core.FatalHookExit  // print log and exits
+	FatalHookNoop  = core.FatalHookNoop  // print log and do nothing/ continue
+	FatalHookPanic = core.FatalHookPanic // print log and panic
+)
+
 // logger construction
 var New = core.New
 var WithLevel = core.WithLevel
@@ -46,3 +54,6 @@ var Stdout = sinks.Stdout
 var Stderr = sinks.Stderr
 var NewFileSink = sinks.NewFileSink
 var NewWriterSink = sinks.NewWriterSink
+
+// fatal hook
+var WithFatalHook = core.WithFatalHook

@@ -205,3 +205,31 @@ func TestTraceIDFromContextEmpty(t *testing.T) {
 		t.Errorf("got %q, want empty string", got)
 	}
 }
+
+func TestFatalHookNoop(t *testing.T) {
+	log := New(WithFatalHook(FatalHookNoop))
+	// should not exit or panic
+	log.Fatal(context.Background(), "fatal message")
+}
+
+func TestFatalHookPanic(t *testing.T) {
+	log := New(WithFatalHook(FatalHookPanic))
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected panic, got none")
+		}
+	}()
+	log.Fatal(context.Background(), "fatal message")
+}
+
+func TestFatalHookExit(t *testing.T) {
+	exited := false
+	log := New(WithFatalHook(FatalHookExit))
+	log.exit = func(code int) {
+		exited = true
+	}
+	log.Fatal(context.Background(), "fatal message")
+	if !exited {
+		t.Error("expected exit to be called")
+	}
+}
