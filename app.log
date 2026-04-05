@@ -1,6 +1,0 @@
-{"level":"INFO","ts":"8:09PM","msg":"hello from flexlog","env":"dev"}
-{"level":"INFO","ts":"8:17PM","msg":"server started","port":8080}
-{"level":"INFO","ts":"8:17PM","msg":"request received","user_id":42,"service":"auth","env":"prod"}
-{"level":"INFO","ts":"8:17PM","trace_id":"abc-123","msg":"processing request"}
-{"level":"WARN","ts":"8:17PM","trace_id":"abc-123","msg":"high latency detected","latency_ms":320}
-{"level":"ERROR","ts":"8:17PM","trace_id":"abc-123","msg":"database timeout","retry":true}

@@ -179,7 +179,7 @@ func (l *Logger) Error(ctx context.Context, msg string, keysAndValues ...any) {
 	l.log(ctx, LevelError, msg, keysAndValues...)
 }
 
-// Fatal logs the entry and immediately terminates the program. Use only for unrecoverable failures.
+// Fatal logs the entry and exit behaviour is dependent on hook used. Defaults to exit. Use only for unrecoverable failures.
 func (l *Logger) Fatal(ctx context.Context, msg string, keysAndValues ...any) {
 	l.log(ctx, LevelFatal, msg, keysAndValues...)
 	switch l.fatalHook {
