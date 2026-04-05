@@ -1,7 +1,6 @@
 # flexlog
 
-A lightweight, structured, leveled logger for Go. Built for low overhead —
-no reflection, no unnecessary allocations, just fast JSON output to stdout.
+Fast, structured and customisable logging for Go. No reflection, no bloat — just clean JSON output, even to multiple sinks.
 
 ## Installation
 
@@ -22,6 +21,7 @@ import (
 func main() {
     ctx := context.Background()
     log := flexlog.New()
+    defer log.Close()
 
     log.Info(ctx, "server started", "port", 8080)
 }
@@ -35,40 +35,98 @@ Output:
 
 ## Levels
 
-flexlog supports six log levels, in ascending order of severity:
-
 ```go
 log.Trace(ctx, "very detailed info")
 log.Debug(ctx, "useful during development")
 log.Info(ctx, "normal operational events")
 log.Warn(ctx, "something unexpected, but recovered")
 log.Error(ctx, "failure that needs attention")
-log.Fatal(ctx, "unrecoverable failure") // logs then calls os.Exit(1)
+log.Fatal(ctx, "unrecoverable failure") // logs then calls os.Exit(1) by default
 ```
 
 The default minimum level is `Info`. Entries below the minimum are silently dropped.
-
-## Options
-
-### Set minimum level
 
 ```go
 log := flexlog.New(flexlog.WithLevel(flexlog.LevelDebug))
 ```
 
-### Attach persistent fields
+## Sinks
 
-Use `With` to create a child logger with fields that appear on every entry:
+Sinks are where your logs go. You can attach multiple.
 
 ```go
-log := flexlog.New()
-serviceLog := log.With("service", "auth", "env", "prod")
+fileSink, err := flexlog.NewFileSink("app.log")
+if err != nil {
+    log.Fatal(err)
+}
 
-serviceLog.Info(ctx, "request received", "user_id", 42)
-// {"level":"INFO","ts":...,"msg":"request received","service":"auth","env":"prod","user_id":42}
+logger := flexlog.New(
+    flexlog.WithSink(flexlog.Stdout),
+    flexlog.WithSink(fileSink),
+)
+defer logger.Close()
 ```
 
-Child loggers inherit their parent's level and fields. The parent is unchanged.
+### Built-in sinks
+
+| Sink                        | Description                          |
+| --------------------------- | ------------------------------------ |
+| `flexlog.Stdout`            | Writes to stdout (default)           |
+| `flexlog.Stderr`            | Writes to stderr                     |
+| `flexlog.NewFileSink(path)` | Appends to a file, creates if needed |
+| `flexlog.NewWriterSink(w)`  | Wraps any `io.Writer`                |
+
+### Custom sinks
+
+Any type with `Write` and `Close` satisfies the `Sink` interface:
+
+```go
+type Sink interface {
+    Write(level string, ts any, traceID string, msg string, fields map[string]any) error
+    Close() error
+}
+```
+
+Example - writing to a database:
+
+```go
+type SQLiteSink struct{ db *sql.DB }
+
+func (s *SQLiteSink) Write(level string, ts any, traceID string, msg string, fields map[string]any) error {
+    _, err := s.db.Exec(`INSERT INTO logs (level, ts, msg) VALUES (?, ?, ?)`, level, ts, msg)
+    return err
+}
+
+func (s *SQLiteSink) Close() error { return s.db.Close() }
+```
+
+```go
+logger := flexlog.New(flexlog.WithSink(&SQLiteSink{db: db}))
+```
+
+## Timestamp Formats
+
+```go
+logger := flexlog.New(flexlog.WithTimeFormat(flexlog.TimeRFC3339))
+```
+
+| Constant          | Output                             |
+| ----------------- | ---------------------------------- |
+| `TimeUnixMilli`   | `1775315926040` (default)          |
+| `TimeUnixSec`     | `1775315926`                       |
+| `TimeRFC3339`     | `"2026-04-04T10:30:00Z"`           |
+| `TimeRFC3339Nano` | `"2026-04-04T10:30:00.000000000Z"` |
+| `TimeKitchen`     | `"3:04PM"`                         |
+
+## Persistent Fields
+
+`With` returns a child logger with fields attached to every entry:
+
+```go
+reqLog := logger.With("service", "auth", "env", "prod")
+reqLog.Info(ctx, "request received", "user_id", 42)
+// {"level":"INFO","ts":...,"msg":"request received","service":"auth","env":"prod","user_id":42}
+```
 
 ## Distributed Tracing
 
@@ -76,24 +134,30 @@ Attach a trace ID to a context once and it flows through automatically:
 
 ```go
 ctx = flexlog.WithTraceID(ctx, "abc-123")
-log.Info(ctx, "processing request")
+logger.Info(ctx, "processing request")
 // {"level":"INFO","ts":...,"trace_id":"abc-123","msg":"processing request"}
 ```
 
-Pull the trace ID back out with `flexlog.TraceIDFromContext(ctx)` if needed.
+## Fatal Hook
 
-## Output Format
+Control what happens after a `Fatal` log:
 
-All entries are written as newline-delimited JSON to stdout. Field order is always:
-level → ts → trace_id (omitted if empty) → msg → your fields
+```go
+// default - logs and exits
+logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookExit))
 
-Timestamps are Unix milliseconds (`ts`).
+// logs but does nothing - useful in tests
+logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookNoop))
+
+// logs then panics
+logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookPanic))
+```
 
 ## Roadmap
 
-- **v1** — JSON output to stdout ✅
-- **v1.5** — Pluggable sinks (file, stderr, remote), configurable timestamp format via `WithTimeFormat`
-- **v2** — Web-based log viewer, searchable and sortable, shipped as a single binary
+- **v1** - JSON output to stdout ✅
+- **v1.5** - Pluggable sinks, configurable timestamp format, fatal hook ✅
+- **v2** - Web-based log viewer, searchable and sortable, shipped as a single binary
 
 ## License
 

@@ -10,7 +10,7 @@ import (
 // --- JSON Structure Tests ---
 
 func TestFormatBasic(t *testing.T) {
-	ts := time.UnixMilli(1672531200000) // Fixed timestamp for consistency
+	ts := int64(1672531200000) // Fixed timestamp for consistency
 	level := "INFO"
 	traceID := "trace-123"
 	msg := "hello world"
