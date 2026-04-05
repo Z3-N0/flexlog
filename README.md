@@ -1,6 +1,6 @@
 # flexlog
 
-A lightweight, structured, leveled logger for Go. Built for low overhead —
+A lightweight, structured, leveled logger for Go. Built for low overhead
 no reflection, no unnecessary allocations, just fast JSON output to stdout.
 
 ## Installation
@@ -91,9 +91,9 @@ Timestamps are Unix milliseconds (`ts`).
 
 ## Roadmap
 
-- **v1** — JSON output to stdout ✅
-- **v1.5** — Pluggable sinks (file, stderr, remote), configurable timestamp format via `WithTimeFormat`
-- **v2** — Web-based log viewer, searchable and sortable, shipped as a single binary
+- **v1** - JSON output to stdout ✅
+- **v1.5** - Pluggable sinks (file, stderr, remote), configurable timestamp format via `WithTimeFormat`
+- **v2** - Web-based log viewer, searchable and sortable, shipped as a single binary
 
 ## License
 

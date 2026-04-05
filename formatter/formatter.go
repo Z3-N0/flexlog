@@ -15,7 +15,7 @@ var bufPool = sync.Pool{
 
 // Format serializes a log entry to JSON bytes.
 // Uses a pooled buffer and manual writing to avoid reflection and minimize allocations.
-func Format(level string, ts time.Time, traceID string, msg string, fields map[string]any) ([]byte, error) {
+func Format(level string, ts any, traceID string, msg string, fields map[string]any) ([]byte, error) {
 	buf := bufPool.Get().(*bytes.Buffer)
 	buf.Reset()
 	defer bufPool.Put(buf)
@@ -24,8 +24,18 @@ func Format(level string, ts time.Time, traceID string, msg string, fields map[s
 
 	// fixed fields first, in a consistent order
 	writeStringField(buf, "level", level, true)
-	buf.WriteByte(',')
-	writeInt(buf, "ts", ts.UnixMilli())
+	switch v := ts.(type) {
+	case int64:
+		buf.WriteByte(',')
+		writeInt(buf, "ts", v)
+	case string:
+		writeStringField(buf, "ts", v, false)
+	case time.Time:
+		buf.WriteByte(',')
+		writeInt(buf, "ts", v.UnixMilli())
+	default:
+		writeString(buf, "ts", fmt.Sprintf("%v", v))
+	}
 	if traceID != "" {
 		writeStringField(buf, "trace_id", traceID, false)
 	}
