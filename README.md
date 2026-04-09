@@ -1,4 +1,4 @@
-# flexlog
+# Flexlog
 
 Fast, structured and customisable logging for Go. No reflection, no bloat — just clean JSON output, even to multiple sinks.
 

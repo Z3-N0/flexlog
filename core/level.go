@@ -10,7 +10,7 @@ const (
 	LevelInfo                      // LevelInfo is for general operational messages
 	LevelWarn                      // LevelWarn is for non-critical problems
 	LevelError                     // LevelError is for failures that need attention
-	LevelFatal                     // LevelFatal logs and then terminates the program
+	LevelFatal                     // LevelFatal logs and then can terminate the program
 )
 
 // String returns the human-readable name of the level.

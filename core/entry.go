@@ -10,7 +10,6 @@ type Entry struct {
 	Message   string         // human-readable description
 	Timestamp time.Time      // when the event occurred
 	Fields    map[string]any // structured key-value pairs
-	ServiceID string         // which service produced this entry
 	TraceID   string         // optional distributed trace correlation
 }
 
