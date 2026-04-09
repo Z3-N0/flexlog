@@ -139,3 +139,60 @@ func BenchmarkFormat(b *testing.B) {
 		_, _ = Format("INFO", ts, "trace-abc", "log message", fields)
 	}
 }
+
+func TestFormatControlCharacters(t *testing.T) {
+	cases := []struct {
+		name string
+		msg  string
+	}{
+		{"null byte", "msg\x00end"},
+		{"bell", "msg\x07end"},
+		{"form feed", "msg\x0Cend"},
+		{"vertical tab", "msg\x0Bend"},
+		{"unit separator", "msg\x1Fend"},
+		{"tab", "msg\tend"},
+		{"carriage return", "msg\rend"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := Format("INFO", int64(0), "", tc.msg, nil)
+			if err != nil {
+				t.Fatalf("Format failed: %v", err)
+			}
+			var parsed map[string]any
+			if err := json.Unmarshal(got, &parsed); err != nil {
+				t.Errorf("control char %q produced invalid JSON: %s", tc.msg, got)
+			}
+			if parsed["msg"] != tc.msg {
+				t.Errorf("msg roundtrip failed.\ngot:  %v\nwant: %v", parsed["msg"], tc.msg)
+			}
+		})
+	}
+}
+
+func TestFormatControlCharactersInKeys(t *testing.T) {
+	fields := map[string]any{
+		"key\x00null": "value",
+		"key\ttab":    "value",
+	}
+	got, err := Format("INFO", int64(0), "", "msg", fields)
+	if err != nil {
+		t.Fatalf("Format failed: %v", err)
+	}
+	var parsed map[string]any
+	if err := json.Unmarshal(got, &parsed); err != nil {
+		t.Errorf("control chars in keys produced invalid JSON: %s", got)
+	}
+}
+
+func TestFormatControlCharactersInTraceID(t *testing.T) {
+	got, err := Format("INFO", int64(0), "trace\x01id", "msg", nil)
+	if err != nil {
+		t.Fatalf("Format failed: %v", err)
+	}
+	var parsed map[string]any
+	if err := json.Unmarshal(got, &parsed); err != nil {
+		t.Errorf("control char in traceID produced invalid JSON: %s", got)
+	}
+}
