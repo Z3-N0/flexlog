@@ -37,11 +37,8 @@ func (s *FileSink) Write(level string, ts any, traceID string, msg string, field
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
+	out = append(out, '\n')
 	if _, err := s.file.Write(out); err != nil {
-		return err
-	}
-	if _, err := s.file.Write([]byte{'\n'}); err != nil {
 		return err
 	}
 	return nil

@@ -22,10 +22,8 @@ func (s *StderrSink) Write(level string, ts any, traceID string, msg string, fie
 	if err != nil {
 		return err
 	}
+	out = append(out, '\n')
 	if _, err := os.Stderr.Write(out); err != nil {
-		return err
-	}
-	if _, err := os.Stderr.Write([]byte{'\n'}); err != nil {
 		return err
 	}
 	return nil
