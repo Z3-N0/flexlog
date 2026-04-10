@@ -114,7 +114,12 @@ func (l *Logger) With(keysAndValues ...any) *Logger {
 	maps.Copy(child.fields, l.fields)
 	// Add the new fields on top.
 	for i := 0; i+1 < len(keysAndValues); i += 2 {
-		key := fmt.Sprintf("%v", keysAndValues[i])
+		var key string
+		if s, ok := keysAndValues[i].(string); ok {
+			key = s
+		} else {
+			key = fmt.Sprintf("%v", keysAndValues[i])
+		}
 		child.fields[key] = keysAndValues[i+1]
 	}
 	// to handle missing values in key-value pair
@@ -142,7 +147,12 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 	}
 	maps.Copy(entry.Fields, l.fields)
 	for i := 0; i+1 < len(keysAndValues); i += 2 {
-		key := fmt.Sprintf("%v", keysAndValues[i])
+		var key string
+		if s, ok := keysAndValues[i].(string); ok {
+			key = s
+		} else {
+			key = fmt.Sprintf("%v", keysAndValues[i])
+		}
 		entry.Fields[key] = keysAndValues[i+1]
 	}
 	if len(keysAndValues)%2 != 0 {
