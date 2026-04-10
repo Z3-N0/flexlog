@@ -114,9 +114,9 @@ func (l *Logger) With(keysAndValues ...any) *Logger {
 	}
 	// to handle missing values in key-value pair
 	if len(keysAndValues)%2 != 0 {
-    key := fmt.Sprintf("%v", keysAndValues[len(keysAndValues)-1])
-    child.fields[key] = "MISSING"
-}
+		key := fmt.Sprintf("%v", keysAndValues[len(keysAndValues)-1])
+		child.fields[key] = "MISSING"
+	}
 	return child
 }
 
@@ -135,9 +135,9 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 		entry.Fields[key] = keysAndValues[i+1]
 	}
 	if len(keysAndValues)%2 != 0 {
-    key := fmt.Sprintf("%v", keysAndValues[len(keysAndValues)-1])
-    entry.Fields[key] = "MISSING"
-}
+		key := fmt.Sprintf("%v", keysAndValues[len(keysAndValues)-1])
+		entry.Fields[key] = "MISSING"
+	}
 
 	ts := FormatTime(entry.Timestamp, l.timeFmt)
 
