@@ -120,12 +120,24 @@ logger := flexlog.New(flexlog.WithTimeFormat(flexlog.TimeRFC3339))
 
 ## Persistent Fields
 
-`With` returns a child logger with fields attached to every entry:
+`With` returns a child logger with fields attached to every entry. If no
+arguments are passed, the same logger is returned unchanged.
+
+Call-site fields take precedence over persistent fields when keys collide:
 
 ```go
-reqLog := logger.With("service", "auth", "env", "prod")
-reqLog.Info(ctx, "request received", "user_id", 42)
-// {"level":"INFO","ts":...,"msg":"request received","service":"auth","env":"prod","user_id":42}
+log := logger.With("env", "prod")
+log.Info(ctx, "msg", "env", "staging")
+// env will be "staging" in the output
+```
+
+Keys and values must alternate. If an odd number of arguments is passed,
+the final key is logged with the value `"MISSING"` as a signal that
+something is wrong at the call site:
+
+```go
+log.Info(ctx, "msg", "orphaned_key")
+// output will contain: "orphaned_key": "MISSING"
 ```
 
 ## Distributed Tracing
