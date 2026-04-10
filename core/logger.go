@@ -6,6 +6,7 @@ import (
 	"maps"
 	"os"
 	"sync"
+	"sync/atomic"
 
 	"github.com/Z3-N0/flexlog/sinks"
 )
@@ -30,6 +31,7 @@ func TraceIDFromContext(ctx context.Context) string {
 // This is the structure of all log entries. Safe to use from multiple goroutines simultaneously, the mutex ensures output lines never interleave.
 type Logger struct {
 	mu        sync.Mutex     // protects writes to all sinks
+	closed    atomic.Bool    // for graceful shutdown, to ensure a logger isnt closed mid write
 	minLevel  Level          // entries below this level are silently dropped
 	fields    map[string]any // fields that appear on every entry from this logger
 	exit      func(int)      // defaults to os.Exit, overridable in tests
@@ -125,6 +127,12 @@ func (l *Logger) With(keysAndValues ...any) *Logger {
 
 // The single path all entries flow through. It checks the level, builds the entry, merges fields, and writes to all sinks.
 func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues ...any) {
+	if l.closed.Load() {
+		return
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if level < l.minLevel {
 		return
 	}
@@ -155,6 +163,7 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 
 // Close flushes and closes all sinks. Always defer this after creating a logger.
 func (l *Logger) Close() error {
+	l.closed.Store(true)
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	var firstErr error
