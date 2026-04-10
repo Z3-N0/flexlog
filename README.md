@@ -1,6 +1,6 @@
-# flexlog
+# Flexlog
 
-Fast, structured and customisable logging for Go. No reflection, no bloat — just clean JSON output, even to multiple sinks.
+Fast, structured and customisable logging for Go. No reflection, no bloat - just clean JSON output, even to multiple sinks.
 
 ## Installation
 
@@ -120,12 +120,28 @@ logger := flexlog.New(flexlog.WithTimeFormat(flexlog.TimeRFC3339))
 
 ## Persistent Fields
 
-`With` returns a child logger with fields attached to every entry:
+`With` returns a child logger with fields attached to every entry. If no
+arguments are passed, the same logger is returned unchanged:
 
 ```go
-reqLog := logger.With("service", "auth", "env", "prod")
-reqLog.Info(ctx, "request received", "user_id", 42)
-// {"level":"INFO","ts":...,"msg":"request received","service":"auth","env":"prod","user_id":42}
+child := logger.With() // returns logger itself, no allocation
+```
+
+Call-site fields take precedence over persistent fields when keys collide:
+
+```go
+log := logger.With("env", "prod")
+log.Info(ctx, "msg", "env", "staging")
+// env will be "staging" in the output
+```
+
+Keys and values must alternate. If an odd number of arguments is passed,
+the final key is logged with the value `"MISSING"` as a signal that
+something is wrong at the call site:
+
+```go
+log.Info(ctx, "msg", "orphaned_key")
+// output will contain: "orphaned_key": "MISSING"
 ```
 
 ## Distributed Tracing
@@ -151,6 +167,16 @@ logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookNoop))
 
 // logs then panics
 logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookPanic))
+```
+
+## Closing the Logger
+
+Always defer `Close()` after creating a logger. Once closed, any further
+log calls are silently dropped — no writes to closed sinks, no panics:
+
+```go
+log := flexlog.New()
+defer log.Close()
 ```
 
 ## Roadmap

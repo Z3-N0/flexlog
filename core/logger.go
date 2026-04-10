@@ -6,6 +6,7 @@ import (
 	"maps"
 	"os"
 	"sync"
+	"sync/atomic"
 
 	"github.com/Z3-N0/flexlog/sinks"
 )
@@ -30,6 +31,7 @@ func TraceIDFromContext(ctx context.Context) string {
 // This is the structure of all log entries. Safe to use from multiple goroutines simultaneously, the mutex ensures output lines never interleave.
 type Logger struct {
 	mu        sync.Mutex     // protects writes to all sinks
+	closed    atomic.Bool    // for graceful shutdown, to ensure a logger isnt closed mid write
 	minLevel  Level          // entries below this level are silently dropped
 	fields    map[string]any // fields that appear on every entry from this logger
 	exit      func(int)      // defaults to os.Exit, overridable in tests
@@ -97,6 +99,9 @@ func New(opts ...Option) *Logger {
 // Every entry from the child will include these fields.
 // Keys and values must alternate: With("service", "api", "env", "prod").
 func (l *Logger) With(keysAndValues ...any) *Logger {
+	if len(keysAndValues) == 0 {
+		return l
+	}
 	child := &Logger{
 		minLevel:  l.minLevel,
 		fields:    make(map[string]any, len(l.fields)+len(keysAndValues)/2),
@@ -109,14 +114,30 @@ func (l *Logger) With(keysAndValues ...any) *Logger {
 	maps.Copy(child.fields, l.fields)
 	// Add the new fields on top.
 	for i := 0; i+1 < len(keysAndValues); i += 2 {
-		key := fmt.Sprintf("%v", keysAndValues[i])
+		var key string
+		if s, ok := keysAndValues[i].(string); ok {
+			key = s
+		} else {
+			key = fmt.Sprintf("%v", keysAndValues[i])
+		}
 		child.fields[key] = keysAndValues[i+1]
+	}
+	// to handle missing values in key-value pair
+	if len(keysAndValues)%2 != 0 {
+		key := fmt.Sprintf("%v", keysAndValues[len(keysAndValues)-1])
+		child.fields[key] = "MISSING"
 	}
 	return child
 }
 
 // The single path all entries flow through. It checks the level, builds the entry, merges fields, and writes to all sinks.
 func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues ...any) {
+	if l.closed.Load() {
+		return
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if level < l.minLevel {
 		return
 	}
@@ -126,8 +147,17 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 	}
 	maps.Copy(entry.Fields, l.fields)
 	for i := 0; i+1 < len(keysAndValues); i += 2 {
-		key := fmt.Sprintf("%v", keysAndValues[i])
+		var key string
+		if s, ok := keysAndValues[i].(string); ok {
+			key = s
+		} else {
+			key = fmt.Sprintf("%v", keysAndValues[i])
+		}
 		entry.Fields[key] = keysAndValues[i+1]
+	}
+	if len(keysAndValues)%2 != 0 {
+		key := fmt.Sprintf("%v", keysAndValues[len(keysAndValues)-1])
+		entry.Fields[key] = "MISSING"
 	}
 
 	ts := FormatTime(entry.Timestamp, l.timeFmt)
@@ -143,6 +173,7 @@ func (l *Logger) log(ctx context.Context, level Level, msg string, keysAndValues
 
 // Close flushes and closes all sinks. Always defer this after creating a logger.
 func (l *Logger) Close() error {
+	l.closed.Store(true)
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	var firstErr error

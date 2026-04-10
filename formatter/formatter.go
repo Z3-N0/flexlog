@@ -55,6 +55,8 @@ func Format(level string, ts any, traceID string, msg string, fields map[string]
 			writeFloat(buf, k, val)
 		case bool:
 			writeBool(buf, k, val)
+		case error:
+			writeString(buf, k, val.Error())
 		default:
 			writeString(buf, k, stringify(v))
 		}
@@ -118,23 +120,30 @@ func writeBool(buf *bytes.Buffer, key string, val bool) {
 // writeEscaped writes the string to the buffer while escaping JSON special characters.
 // This avoids the extra allocation of creating a new "escaped" string.
 func writeEscaped(buf *bytes.Buffer, s string) {
-	for i := 0; i < len(s); i++ {
-		switch s[i] {
-		case '"':
+	for i := range len(s) {
+		c := s[i]
+		switch {
+		case c == '"':
 			buf.WriteString(`\"`)
-		case '\\':
+		case c == '\\':
 			buf.WriteString(`\\`)
-		case '\n':
+		case c == '\n':
 			buf.WriteString(`\n`)
-		case '\r':
+		case c == '\r':
 			buf.WriteString(`\r`)
-		case '\t':
+		case c == '\t':
 			buf.WriteString(`\t`)
+		case c < 0x20:
+			buf.WriteString(`\u00`)
+			buf.WriteByte(hexChars[c>>4])
+			buf.WriteByte(hexChars[c&0x0f])
 		default:
-			buf.WriteByte(s[i])
+			buf.WriteByte(c)
 		}
 	}
 }
+
+const hexChars = "0123456789abcdef"
 
 func stringify(v any) string {
 	return fmt.Sprintf("%v", v)
