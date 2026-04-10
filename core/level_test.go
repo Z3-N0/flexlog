@@ -233,3 +233,48 @@ func TestFatalHookExit(t *testing.T) {
 		t.Error("expected exit to be called")
 	}
 }
+
+func TestLoggerClosePreventsFurtherWrites(t *testing.T) {
+    l := New()
+    if err := l.Close(); err != nil {
+        t.Fatalf("Close() returned error: %v", err)
+    }
+    // should silently return without panicking or writing to closed sinks
+    l.Info(context.Background(), "this should be dropped")
+}
+
+func TestLoggerCloseTwice(t *testing.T) {
+    l := New()
+    if err := l.Close(); err != nil {
+        t.Fatalf("first Close() returned error: %v", err)
+    }
+    // second close should not panic
+    _ = l.Close()
+}
+
+func TestLoggerNilContext(t *testing.T) {
+    l := New()
+    defer l.Close()
+    // should not panic
+    l.Info(nil, "nil context should be handled gracefully")
+}
+
+func TestLoggerWithOddKeysAndValues(t *testing.T) {
+    l := New()
+    child := l.With("key1", "val1", "orphaned")
+
+    if child.fields["key1"] != "val1" {
+        t.Errorf("expected key1=val1, got %v", child.fields["key1"])
+    }
+    if child.fields["orphaned"] != "MISSING" {
+        t.Errorf("expected orphaned=MISSING, got %v", child.fields["orphaned"])
+    }
+}
+
+func TestLoggerWithNoArgs(t *testing.T) {
+    l := New()
+    child := l.With()
+    if child != l {
+        t.Error("With() with no args should return the same logger instance")
+    }
+}
