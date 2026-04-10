@@ -55,6 +55,8 @@ func Format(level string, ts any, traceID string, msg string, fields map[string]
 			writeFloat(buf, k, val)
 		case bool:
 			writeBool(buf, k, val)
+		case error:
+			writeString(buf, k, val.Error())
 		default:
 			writeString(buf, k, stringify(v))
 		}
