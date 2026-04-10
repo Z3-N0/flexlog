@@ -121,7 +121,11 @@ logger := flexlog.New(flexlog.WithTimeFormat(flexlog.TimeRFC3339))
 ## Persistent Fields
 
 `With` returns a child logger with fields attached to every entry. If no
-arguments are passed, the same logger is returned unchanged.
+arguments are passed, the same logger is returned unchanged:
+
+```go
+child := logger.With() // returns logger itself, no allocation
+```
 
 Call-site fields take precedence over persistent fields when keys collide:
 
@@ -163,6 +167,16 @@ logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookNoop))
 
 // logs then panics
 logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookPanic))
+```
+
+## Closing the Logger
+
+Always defer `Close()` after creating a logger. Once closed, any further
+log calls are silently dropped — no writes to closed sinks, no panics:
+
+```go
+log := flexlog.New()
+defer log.Close()
 ```
 
 ## Roadmap
