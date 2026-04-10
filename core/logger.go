@@ -97,6 +97,9 @@ func New(opts ...Option) *Logger {
 // Every entry from the child will include these fields.
 // Keys and values must alternate: With("service", "api", "env", "prod").
 func (l *Logger) With(keysAndValues ...any) *Logger {
+	if len(keysAndValues) == 0 {
+		return l
+	}
 	child := &Logger{
 		minLevel:  l.minLevel,
 		fields:    make(map[string]any, len(l.fields)+len(keysAndValues)/2),
