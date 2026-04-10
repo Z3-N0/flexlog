@@ -199,18 +199,18 @@ func TestFormatControlCharactersInTraceID(t *testing.T) {
 }
 
 func TestFormatErrorField(t *testing.T) {
-    fields := map[string]any{
-        "err": fmt.Errorf("something went wrong"),
-    }
-    got, err := Format("ERROR", int64(0), "", "msg", fields)
-    if err != nil {
-        t.Fatalf("Format failed: %v", err)
-    }
-    var parsed map[string]any
-    if err := json.Unmarshal(got, &parsed); err != nil {
-        t.Fatalf("produced invalid JSON: %s", got)
-    }
-    if parsed["err"] != "something went wrong" {
-        t.Errorf("got %v, want %q", parsed["err"], "something went wrong")
-    }
+	fields := map[string]any{
+		"err": fmt.Errorf("something went wrong"),
+	}
+	got, err := Format("ERROR", int64(0), "", "msg", fields)
+	if err != nil {
+		t.Fatalf("Format failed: %v", err)
+	}
+	var parsed map[string]any
+	if err := json.Unmarshal(got, &parsed); err != nil {
+		t.Fatalf("produced invalid JSON: %s", got)
+	}
+	if parsed["err"] != "something went wrong" {
+		t.Errorf("got %v, want %q", parsed["err"], "something went wrong")
+	}
 }
