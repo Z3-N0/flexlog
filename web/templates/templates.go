@@ -8,7 +8,7 @@ import (
 )
 
 var (
-//go:embed *.html icons/*.html
+	//go:embed *.html icons/*.html
 	templateFS embed.FS
 
 	Templates *template.Template
@@ -18,9 +18,9 @@ var (
 func Initialize() {
 	entries, _ := templateFS.ReadDir(".")
 	for _, e := range entries {
-    fmt.Println(e.Name())
+		fmt.Println(e.Name())
 	}
-Templates = template.Must(template.New("").ParseFS(templateFS, "*.html", "icons/*.html"))
+	Templates = template.Must(template.New("").ParseFS(templateFS, "*.html", "icons/*.html"))
 }
 
 // WriteResponse writes an executed template to the response writer.

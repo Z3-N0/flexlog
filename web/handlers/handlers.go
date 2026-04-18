@@ -21,7 +21,7 @@ type Handler struct {
 	ready   *atomic.Bool
 }
 
-type LeftbarData struct{
+type LeftbarData struct {
 	Files []string
 }
 
@@ -54,7 +54,7 @@ func (h *Handler) LayoutHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Leftbar LeftbarData
 	}{
-			Leftbar: LeftbarData{Files: h.scan.Files},
+		Leftbar: LeftbarData{Files: h.scan.Files},
 	}
 	if err := templates.WriteResponse(w, "pg-layout.html", data); err != nil {
 		h.serverError(w, err)
