@@ -1,0 +1,32 @@
+server/timeutil.go
+  h_160bcf5600f276 1-25
+web/templates/templates.go
+  h_160bcf5600f276 1-26
+web/handlers/handlers.go
+  h_160bcf5600f276 1-151
+cmd/viewer/server.go
+  h_160bcf5600f276 1-86
+web/app.go
+  h_160bcf5600f276 1-46
+server/query.go
+  h_160bcf5600f276 43,105,118
+web/templates/index.html
+  h_160bcf5600f276 1
+web/static.go
+  h_160bcf5600f276 1-18
+cmd/viewer/main.go
+  h_160bcf5600f276 1-54
+web/routes.go
+  h_160bcf5600f276 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "8b901ab3fb0c6c51add55f3f3083cc3d4aead238",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
