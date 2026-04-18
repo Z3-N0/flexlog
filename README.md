@@ -172,7 +172,7 @@ logger := flexlog.New(flexlog.WithFatalHook(flexlog.FatalHookPanic))
 ## Closing the Logger
 
 Always defer `Close()` after creating a logger. Once closed, any further
-log calls are silently dropped — no writes to closed sinks, no panics:
+log calls are silently dropped - no writes to closed sinks, no panics:
 
 ```go
 log := flexlog.New()
