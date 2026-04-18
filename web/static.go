@@ -13,6 +13,6 @@ var staticEmbed embed.FS
 var StaticFS http.FileSystem
 
 func init() {
-    sub, _ := fs.Sub(staticEmbed, "static")
-    StaticFS = http.FS(sub)
+	sub, _ := fs.Sub(staticEmbed, "static")
+	StaticFS = http.FS(sub)
 }
