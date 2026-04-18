@@ -40,7 +40,7 @@ func Execute(q Query, indexes map[string]*FileIndex) QueryResult {
 
 	targetFiles := resolveFiles(q, indexes)
 
-	// fan out — one goroutine per file
+	// one goroutine per file
 	var mu sync.Mutex
 	var all []LogEntry
 	var wg sync.WaitGroup
@@ -102,7 +102,7 @@ func scanFile(idx *FileIndex, q Query) []LogEntry {
 			continue
 		}
 
-		// substring filter on raw line — cheap, done first
+		// substring filter on raw line
 		if len(searchTerm) > 0 && !bytes.Contains(bytes.ToLower(line), searchTerm) {
 			continue
 		}
@@ -115,7 +115,7 @@ func scanFile(idx *FileIndex, q Query) []LogEntry {
 			continue
 		}
 
-		// level filter — cheap struct field check
+		// level filter
 		if len(levelSet) > 0 && !entry.Malformed {
 			if _, ok := levelSet[entry.Level]; !ok {
 				continue
