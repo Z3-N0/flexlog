@@ -1,0 +1,12 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "adbac93b8da474b6921dabd8781b064f9a1c5ac3",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
