@@ -1,0 +1,29 @@
+# Binary
+flexlog-viewer
+
+# Generated assets
+web/static/tailwind.min.css
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Build cache
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
