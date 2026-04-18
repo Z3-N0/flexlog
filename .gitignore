@@ -3,6 +3,7 @@ flexlog-viewer
 
 # Generated assets
 web/static/tailwind.min.css
+testlogs/
 
 # Go
 *.exe

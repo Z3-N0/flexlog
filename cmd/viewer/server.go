@@ -61,7 +61,14 @@ func start(params *Params, logger *flexlog.Logger) error {
 	grp, grpCtx := errgroup.WithContext(ctx)
 
 	grp.Go(func() error {
-		logger.Info(grpCtx, "flexlog viewer started", "addr", fmt.Sprintf("http://localhost:%d", params.Port))
+		fmt.Print(`
+  __ _           _
+ / _| | _____  _| | ___   __ _
+| |_| |/ _ \ \/ / |/ _ \ / _  |
+|  _| |  __/>  <| | (_) | (_| |
+|_| |_|\___/_/\_\_|\___/ \__, |
+                          |___/  viewer - http://localhost:8080
+`)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("server error: %w", err)
 		}

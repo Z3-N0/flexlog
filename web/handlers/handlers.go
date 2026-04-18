@@ -21,6 +21,10 @@ type Handler struct {
 	ready   *atomic.Bool
 }
 
+type LeftbarData struct{
+	Files []string
+}
+
 // New creates a Handler with all required dependencies.
 func New(
 	indexes map[string]*server.FileIndex,
@@ -39,18 +43,18 @@ func New(
 }
 
 // HandleIndex serves the full page shell.
-func (h *Handler) HandleIndex(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
 	if err := templates.WriteResponse(w, "index.html", nil); err != nil {
 		h.serverError(w, err)
 	}
 }
 
 // HandleLayout serves the page layout fragment.
-func (h *Handler) HandleLayout(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) LayoutHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
-		Files []string
+		Leftbar LeftbarData
 	}{
-		Files: h.scan.Files,
+			Leftbar: LeftbarData{Files: h.scan.Files},
 	}
 	if err := templates.WriteResponse(w, "pg-layout.html", data); err != nil {
 		h.serverError(w, err)
@@ -59,7 +63,7 @@ func (h *Handler) HandleLayout(w http.ResponseWriter, r *http.Request) {
 
 // HandleStatus returns an HTML fragment reflecting indexing state.
 // If not ready, the fragment includes an HTMX poll so the browser retries automatically.
-func (h *Handler) HandleStatus(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) StatusHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		Ready   bool
 		Indexed int64
@@ -73,7 +77,7 @@ func (h *Handler) HandleStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleQuery runs a query and returns a paginated HTML fragment.
-func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) QueryHandler(w http.ResponseWriter, r *http.Request) {
 	if !h.ready.Load() {
 		http.Error(w, "indexing in progress", http.StatusServiceUnavailable)
 		return
@@ -88,7 +92,7 @@ func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleRaw reads and returns a single raw log line by file path and byte offset.
-func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) RawHandler(w http.ResponseWriter, r *http.Request) {
 	file := r.URL.Query().Get("file")
 	offsetStr := r.URL.Query().Get("offset")
 

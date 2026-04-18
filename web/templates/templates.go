@@ -2,12 +2,13 @@ package templates
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"net/http"
 )
 
 var (
-	//go:embed *.html
+//go:embed *.html icons/*.html
 	templateFS embed.FS
 
 	Templates *template.Template
@@ -15,7 +16,11 @@ var (
 
 // Initialize parses all HTML templates and sets up the static file server.
 func Initialize() {
-	Templates = template.Must(template.New("").ParseFS(templateFS, "*.html"))
+	entries, _ := templateFS.ReadDir(".")
+	for _, e := range entries {
+    fmt.Println(e.Name())
+	}
+Templates = template.Must(template.New("").ParseFS(templateFS, "*.html", "icons/*.html"))
 }
 
 // WriteResponse writes an executed template to the response writer.

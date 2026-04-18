@@ -1,5 +1,35 @@
 @import "tailwindcss";
 
+/* #region THEME TOKENS */
+/* Dark is default - :root defines dark values.
+   Light overrides via [data-theme="light"].
+   All vars registered in @theme so Tailwind generates utilities:
+   bg-bg-base, bg-bg-surface, bg-bg-raised,
+   border-border, text-text-primary, text-text-muted,
+   bg-accent, bg-accent-dim etc. */
+
+@theme {
+  --font-mono: 'Courier New', Courier, monospace;
+
+  --color-bg-base:     #0e0e11;
+  --color-bg-surface:  #16161a;
+  --color-bg-raised:   #1e1e24;
+  --color-border:      #2a2a35;
+  --color-text-primary:#e8e8f0;
+  --color-text-muted:  #6b6b80;
+  --color-accent:      #7c6af7;
+  --color-accent-dim:  #3d3570;
+
+  --color-level-trace: #6b6b80;
+  --color-level-debug: #4a9eff;
+  --color-level-info:  #34d399;
+  --color-level-warn:  #fbbf24;
+  --color-level-error: #f87171;
+  --color-level-fatal: #dc2626;
+}
+/* #endregion */
+
+/* #region CSS VARS - synced with @theme, overridden by light */
 :root {
   --bg-base:      #0e0e11;
   --bg-surface:   #16161a;
@@ -18,7 +48,31 @@
   --level-fatal:  #dc2626;
 }
 
-* { box-sizing: border-box; }
+[data-theme="light"] {
+  --bg-base:      #f4f4f8;
+  --bg-surface:   #ffffff;
+  --bg-raised:    #e8e8f0;
+  --border:       #d0d0e0;
+  --text-primary: #1a1a2e;
+  --text-muted:   #6b6b80;
+  --accent:       #7c6af7;
+  --accent-dim:   #c5bfff;
+
+  --color-bg-base:     #f4f4f8;
+  --color-bg-surface:  #ffffff;
+  --color-bg-raised:   #e8e8f0;
+  --color-border:      #d0d0e0;
+  --color-text-primary:#1a1a2e;
+  --color-text-muted:  #6b6b80;
+  --color-accent:      #7c6af7;
+  --color-accent-dim:  #c5bfff;
+}
+/* #endregion */
+
+/* #region BASE */
+* {
+  box-sizing: border-box;
+}
 
 body {
   background-color: var(--bg-base);
@@ -26,9 +80,19 @@ body {
   font-family: 'Courier New', Courier, monospace;
   min-height: 100vh;
   margin: 0;
+  transition: background-color 0.3s, color 0.3s;
 }
+/* #endregion */
 
+/* #region SCROLLBAR */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+/* #endregion */
+
+/* #region HTMX INDICATOR */
+.htmx-indicator { opacity: 0; }
+.htmx-request .htmx-indicator { opacity: 1; transition: opacity 200ms ease-in; }
+.htmx-request.htmx-indicator { opacity: 1; transition: opacity 200ms ease-in; }
+/* #endregion */
