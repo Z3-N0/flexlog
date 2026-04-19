@@ -1,0 +1,14 @@
+cmd/viewer/server.go
+  h_160bcf5600f276 65-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "ad949860d8edd5b338c128c020839a2e459826a1",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
