@@ -62,12 +62,13 @@ func start(params *Params, logger *flexlog.Logger) error {
 
 	grp.Go(func() error {
 		fmt.Print(`
-  __ _           _
- / _| | _____  _| | ___   __ _
-| |_| |/ _ \ \/ / |/ _ \ / _  |
-|  _| |  __/>  <| | (_) | (_| |
-|_| |_|\___/_/\_\_|\___/ \__, |
-                          |___/  viewer - http://localhost:8080
+ ______   __         ______     __  __     __         ______     ______
+/\  ___\ /\ \       /\  ___\   /\_\_\_\   /\ \       /\  __ \   /\  ___\
+\ \  __\ \ \ \____  \ \  __\   \/_/\_\/_  \ \ \____  \ \ \/\ \  \ \ \__ \
+ \ \_\    \ \_____\  \ \_____\   /\_\/\_\  \ \_____\  \ \_____\  \ \_____\
+  \/_/     \/_____/   \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_____/
+
+ viewer - http://localhost:8080
 `)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("server error: %w", err)

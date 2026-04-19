@@ -2,7 +2,6 @@ package templates
 
 import (
 	"embed"
-	"fmt"
 	"html/template"
 	"net/http"
 )
@@ -16,10 +15,6 @@ var (
 
 // Initialize parses all HTML templates and sets up the static file server.
 func Initialize() {
-	entries, _ := templateFS.ReadDir(".")
-	for _, e := range entries {
-		fmt.Println(e.Name())
-	}
 	Templates = template.Must(template.New("").ParseFS(templateFS, "*.html", "icons/*.html"))
 }
 
