@@ -1,0 +1,36 @@
+web/handlers/handlers.go
+  h_160bcf5600f276 114-115,117-122,126,132,137
+web/routes.go
+  h_160bcf5600f276 17
+web/templates/fg-logs.html
+  h_160bcf5600f276 6,17-19,27-29,42-46
+web/templates/fg-filters.html
+  h_160bcf5600f276 5,7-11,14-26,37,44-45,49,52,54-60,64,67,75-79,83-89,92,95,99-100,105-106,108,111-114,116,118-133,137,139-142,147,154-155
+magefile.go
+  h_160bcf5600f276 43-49
+web/templates/fg-leftbar.html
+  h_160bcf5600f276 37-49,52,68,83-84,86,91,114
+web/templates/fg-row.html
+  h_160bcf5600f276 5,11,47,52,56-57,63-66
+web/templates/pg-layout.html
+  h_160bcf5600f276 10
+server/timeutil.go
+  h_160bcf5600f276 11,19-20,22-24,26-28
+web/templates/index.html
+  h_160bcf5600f276 2
+server/query.go
+  h_160bcf5600f276 6,43-45,169,172-182,184-186
+web/static/app.js
+  h_160bcf5600f276 8,12-13,19,25,27,29,32-90,94,99,102,110,113,117,136,141,144-157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "8848bfa98cc726562d61e12f311a828a5e4a7b82",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
