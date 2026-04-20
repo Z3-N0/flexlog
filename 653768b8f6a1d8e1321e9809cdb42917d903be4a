@@ -1,0 +1,16 @@
+web/templates/fg-filters.html
+  h_160bcf5600f276 21-22
+web/templates/fg-leftbar.html
+  h_160bcf5600f276 11,36-37,39-41,60-61,77,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "653768b8f6a1d8e1321e9809cdb42917d903be4a",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
