@@ -5,71 +5,63 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"sync/atomic"
 
 	"github.com/Z3-N0/flexlog"
 	"github.com/Z3-N0/flexlog/server"
 	"github.com/Z3-N0/flexlog/web/templates"
 )
 
-// Handler holds the dependencies all HTTP handlers need.
+// ViewerApp is the interface handlers use to access app state.
+// Defined here to avoid circular imports.
+type ViewerApp interface {
+	IsReady() bool
+	IndexedCount() int64
+	GetIndexes() map[string]*server.FileIndex
+	GetScan() server.ScanResult
+	GetLogger() *flexlog.Logger
+}
+
+// Handler holds a reference to the live app state.
 type Handler struct {
-	indexes map[string]*server.FileIndex
-	scan    server.ScanResult
-	logger  *flexlog.Logger
-	indexed *atomic.Int64
-	ready   *atomic.Bool
+	app ViewerApp
 }
 
-type LeftbarData struct {
-	Files []string
-}
-
-// New creates a Handler with all required dependencies.
-func New(
-	indexes map[string]*server.FileIndex,
-	scan server.ScanResult,
-	logger *flexlog.Logger,
-	indexed *atomic.Int64,
-	ready *atomic.Bool,
-) *Handler {
-	return &Handler{
-		indexes: indexes,
-		scan:    scan,
-		logger:  logger,
-		indexed: indexed,
-		ready:   ready,
-	}
+// New creates a Handler with the given app.
+func New(app ViewerApp) *Handler {
+	return &Handler{app: app}
 }
 
 // HandleIndex serves the full page shell.
-func (h *Handler) IndexHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleIndex(w http.ResponseWriter, r *http.Request) {
 	if err := templates.WriteResponse(w, "index.html", nil); err != nil {
 		h.serverError(w, err)
 	}
 }
 
 // HandleLayout serves the page layout fragment.
-func (h *Handler) LayoutHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleLayout(w http.ResponseWriter, r *http.Request) {
 	data := struct {
-		Leftbar LeftbarData
+		Leftbar struct{ Files []string }
 	}{
-		Leftbar: LeftbarData{Files: h.scan.Files},
+		Leftbar: struct{ Files []string }{Files: h.app.GetScan().Files},
 	}
 	if err := templates.WriteResponse(w, "pg-layout.html", data); err != nil {
 		h.serverError(w, err)
 	}
 }
 
-// HandleStatus returns an HTML fragment reflecting indexing state.
-// If not ready, the fragment includes an HTMX poll so the browser retries automatically.
-func (h *Handler) StatusHandler(w http.ResponseWriter, r *http.Request) {
+// HandleStatus returns fg-filters.html when ready, fg-status.html with polling while indexing.
+func (h *Handler) HandleStatus(w http.ResponseWriter, r *http.Request) {
+	if h.app.IsReady() {
+		if err := templates.WriteResponse(w, "fg-filters.html", nil); err != nil {
+			h.serverError(w, err)
+		}
+		return
+	}
 	data := struct {
-		Ready   bool
 		Indexed int64
 	}{
-		Ready:   h.ready.Load(),
-		Indexed: h.indexed.Load(),
+		Indexed: h.app.IndexedCount(),
 	}
 	if err := templates.WriteResponse(w, "fg-status.html", data); err != nil {
 		h.serverError(w, err)
@@ -77,14 +69,14 @@ func (h *Handler) StatusHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleQuery runs a query and returns a paginated HTML fragment.
-func (h *Handler) QueryHandler(w http.ResponseWriter, r *http.Request) {
-	if !h.ready.Load() {
+func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
+	if !h.app.IsReady() {
 		http.Error(w, "indexing in progress", http.StatusServiceUnavailable)
 		return
 	}
 
 	q := parseQuery(r)
-	result := server.Execute(q, h.indexes)
+	result := server.Execute(q, h.app.GetIndexes())
 
 	if err := templates.WriteResponse(w, "fg-logs.html", result); err != nil {
 		h.serverError(w, err)
@@ -92,11 +84,11 @@ func (h *Handler) QueryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleRaw reads and returns a single raw log line by file path and byte offset.
-func (h *Handler) RawHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
 	file := r.URL.Query().Get("file")
 	offsetStr := r.URL.Query().Get("offset")
 
-	if _, ok := h.indexes[file]; !ok {
+	if _, ok := h.app.GetIndexes()[file]; !ok {
 		http.Error(w, "unknown file", http.StatusBadRequest)
 		return
 	}
@@ -150,6 +142,6 @@ func parseQuery(r *http.Request) server.Query {
 }
 
 func (h *Handler) serverError(w http.ResponseWriter, err error) {
-	h.logger.Error(context.Background(), "handler error", "err", err)
+	h.app.GetLogger().Error(context.Background(), "handler error", "err", err)
 	http.Error(w, fmt.Sprintf("internal error: %v", err), http.StatusInternalServerError)
 }

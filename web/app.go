@@ -44,3 +44,18 @@ func (a *App) index(ctx context.Context) {
 	a.ready.Store(true)
 	a.logger.Info(ctx, "indexing complete", "files", len(a.scan.Files))
 }
+
+// IsReady returns true when all files are fully indexed.
+func (a *App) IsReady() bool { return a.ready.Load() }
+
+// IndexedCount returns the number of lines indexed so far.
+func (a *App) IndexedCount() int64 { return a.indexed.Load() }
+
+// GetIndexes returns the live index map.
+func (a *App) GetIndexes() map[string]*server.FileIndex { return a.indexes }
+
+// GetScan returns the scan result.
+func (a *App) GetScan() server.ScanResult { return a.scan }
+
+// GetLogger returns the logger.
+func (a *App) GetLogger() *flexlog.Logger { return a.logger }
