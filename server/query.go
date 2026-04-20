@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -39,6 +40,9 @@ func Execute(q Query, indexes map[string]*FileIndex) QueryResult {
 	}
 
 	targetFiles := resolveFiles(q, indexes)
+	if len(targetFiles) == 0 {
+		return QueryResult{Page: 1, TotalPages: 1}
+	}
 
 	// one goroutine per file
 	var mu sync.Mutex
@@ -145,11 +149,7 @@ func scanFile(idx *FileIndex, q Query) []LogEntry {
 // Empty q.Files means all indexed files.
 func resolveFiles(q Query, indexes map[string]*FileIndex) []*FileIndex {
 	if len(q.Files) == 0 {
-		result := make([]*FileIndex, 0, len(indexes))
-		for _, idx := range indexes {
-			result = append(result, idx)
-		}
-		return result
+		return nil
 	}
 	result := make([]*FileIndex, 0, len(q.Files))
 	for _, f := range q.Files {
@@ -165,9 +165,25 @@ func toLevelSet(levels []string) map[string]struct{} {
 	if len(levels) == 0 {
 		return nil
 	}
-	set := make(map[string]struct{}, len(levels))
+
+	set := make(map[string]struct{})
 	for _, l := range levels {
-		set[l] = struct{}{}
+		if l == "" {
+			continue
+		}
+
+		parts := strings.Split(l, ",")
+		for _, p := range parts {
+			trimmed := strings.TrimSpace(p)
+			if trimmed != "" {
+				// Ensure case matching with ParseLine (usually Uppercase)
+				set[strings.ToUpper(trimmed)] = struct{}{}
+			}
+		}
+	}
+
+	if len(set) == 0 {
+		return nil
 	}
 	return set
 }

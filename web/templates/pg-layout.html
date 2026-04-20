@@ -1,6 +1,5 @@
 {{ define "pg-layout.html" }}
 <div class="flex w-full h-full overflow-hidden">
-
   <!-- Leftbar -->
   {{ template "fg-leftbar.html" .Leftbar }}
 
@@ -8,11 +7,10 @@
   <div
     id="inner-fragment"
     class="flex flex-col grow overflow-hidden"
-    style="background-color: var(--bg-base);"
+    style="background-color: var(--bg-base)"
     data-hx-get="/status"
     data-hx-trigger="load once"
     data-hx-swap="innerHTML"
   ></div>
-
 </div>
 {{ end }}

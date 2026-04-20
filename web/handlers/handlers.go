@@ -111,28 +111,30 @@ func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
 
 // parseQuery builds a Query from request URL params.
 func parseQuery(r *http.Request) server.Query {
+	r.ParseForm()
+
 	q := server.Query{
-		Search:        r.URL.Query().Get("search"),
-		TraceID:       r.URL.Query().Get("trace_id"),
-		Levels:        r.URL.Query()["level"],
-		Files:         r.URL.Query()["file"],
-		ShowMalformed: r.URL.Query().Get("malformed") == "true",
-		SortDesc:      r.URL.Query().Get("desc") != "false",
+		Search:        r.FormValue("search"),
+		TraceID:       r.FormValue("trace_id"),
+		Levels:        r.Form["level"],
+		Files:         r.Form["file"],
+		ShowMalformed: r.FormValue("malformed") == "true",
+		SortDesc:      r.FormValue("desc") != "false",
 		PageSize:      50,
 	}
 
-	if p := r.URL.Query().Get("page"); p != "" {
+	if p := r.FormValue("page"); p != "" {
 		if n, err := strconv.Atoi(p); err == nil && n > 0 {
 			q.Page = n
 		}
 	}
 
-	if from := r.URL.Query().Get("from"); from != "" {
+	if from := r.FormValue("from"); from != "" {
 		if t, err := server.ParseTimeParam(from); err == nil {
 			q.From = t
 		}
 	}
-	if to := r.URL.Query().Get("to"); to != "" {
+	if to := r.FormValue("to"); to != "" {
 		if t, err := server.ParseTimeParam(to); err == nil {
 			q.To = t
 		}

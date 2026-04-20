@@ -6,8 +6,12 @@
   data-hx-swap="outerHTML"
 >
   <!-- Spinner -->
-  <div class="w-8 h-8 rounded-full border-2 border-(--border) border-t-(--accent) animate-spin"></div>
-  <p class="text-sm text-(--text-muted) tracking-widest uppercase">indexing...</p>
+  <div
+    class="w-8 h-8 rounded-full border-2 border-(--border) border-t-(--accent) animate-spin"
+  ></div>
+  <p class="text-sm text-(--text-muted) tracking-widest uppercase">
+    indexing...
+  </p>
   <p class="text-xs text-(--text-muted)">{{ .Indexed }} lines indexed</p>
 </div>
 {{ end }}

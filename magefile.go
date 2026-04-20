@@ -40,6 +40,17 @@ func rm(path string) error {
 
 // ==== Targets ====
 
+// Prepare: clean, css, and tidy (skip build)
+func Prepare() error {
+	if err := Clean(); err != nil {
+		return err
+	}
+	if err := Css(); err != nil {
+		return err
+	}
+	return Gotidy()
+}
+
 // Dev: clean → css → build → tidy
 func Dev() error {
 	fmt.Println("|==> Starting viewer dev build ===|")

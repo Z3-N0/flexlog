@@ -14,7 +14,7 @@ func (a *App) Routes() http.Handler {
 
 	mux.HandleFunc("GET /", h.HandleIndex)
 	mux.HandleFunc("GET /layout", h.HandleLayout)
-	mux.HandleFunc("GET /query", h.HandleQuery)
+	mux.HandleFunc("POST /query", h.HandleQuery)
 	mux.HandleFunc("GET /status", h.HandleStatus)
 	mux.HandleFunc("GET /raw", h.HandleRaw)
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(StaticFS)))
