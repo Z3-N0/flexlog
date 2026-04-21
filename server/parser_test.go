@@ -29,14 +29,14 @@ func TestParseLine(t *testing.T) {
 			isMal:    false,
 		},
 		{
-			name:    "Malformed: missing closing brace",
-			input:   `{"level":"ERROR","msg":"failed"`,
-			isMal:   true,
+			name:  "Malformed: missing closing brace",
+			input: `{"level":"ERROR","msg":"failed"`,
+			isMal: true,
 		},
 		{
-			name:    "Malformed: not JSON",
-			input:   `starting application...`,
-			isMal:   true,
+			name:  "Malformed: not JSON",
+			input: `starting application...`,
+			isMal: true,
 		},
 		{
 			name:    "Extra whitespace and nested-like fields",
