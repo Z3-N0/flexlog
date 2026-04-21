@@ -12,8 +12,8 @@ import (
 const defaultPort = 8080
 
 type Params struct {
-	Path string
-	Port int
+	Path     string
+	Port     int
 	PageSize int
 }
 
@@ -37,8 +37,8 @@ func parseArgs() (*Params, error) {
 	}
 
 	return &Params{
-		Path: *path,
-		Port: *port,
+		Path:     *path,
+		Port:     *port,
 		PageSize: *pageSize,
 	}, nil
 }

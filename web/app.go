@@ -12,11 +12,11 @@ import (
 
 // App holds all runtime state for the viewer.
 type App struct {
-	indexes map[string]*server.FileIndex
-	scan    server.ScanResult
-	logger  *flexlog.Logger
-	indexed atomic.Int64
-	ready   atomic.Bool
+	indexes  map[string]*server.FileIndex
+	scan     server.ScanResult
+	logger   *flexlog.Logger
+	indexed  atomic.Int64
+	ready    atomic.Bool
 	pageSize int
 }
 
@@ -25,8 +25,8 @@ func Initialize(ctx context.Context, scan server.ScanResult, logger *flexlog.Log
 	templates.Initialize()
 
 	app := &App{
-		scan:   scan,
-		logger: logger,
+		scan:     scan,
+		logger:   logger,
 		pageSize: pageSize,
 	}
 
