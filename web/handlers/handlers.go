@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,7 +10,6 @@ import (
 )
 
 // ViewerApp is the interface handlers use to access app state.
-// Defined here to avoid circular imports.
 type ViewerApp interface {
 	IsReady() bool
 	IndexedCount() int64
@@ -34,8 +31,9 @@ func New(app ViewerApp) *Handler {
 
 // HandleIndex serves the full page shell.
 func (h *Handler) HandleIndex(w http.ResponseWriter, r *http.Request) {
+	h.app.GetLogger().Debug(r.Context(), "rendering index")
 	if err := templates.WriteResponse(w, "index.html", nil); err != nil {
-		h.serverError(w, err)
+		h.serverError(w, r, err)
 	}
 }
 
@@ -47,7 +45,7 @@ func (h *Handler) HandleLayout(w http.ResponseWriter, r *http.Request) {
 		Leftbar: struct{ Files []string }{Files: h.app.GetScan().Files},
 	}
 	if err := templates.WriteResponse(w, "pg-layout.html", data); err != nil {
-		h.serverError(w, err)
+		h.serverError(w, r, err)
 	}
 }
 
@@ -55,7 +53,7 @@ func (h *Handler) HandleLayout(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) HandleStatus(w http.ResponseWriter, r *http.Request) {
 	if h.app.IsReady() {
 		if err := templates.WriteResponse(w, "fg-filters.html", nil); err != nil {
-			h.serverError(w, err)
+			h.serverError(w, r, err)
 		}
 		return
 	}
@@ -65,7 +63,7 @@ func (h *Handler) HandleStatus(w http.ResponseWriter, r *http.Request) {
 		Indexed: h.app.IndexedCount(),
 	}
 	if err := templates.WriteResponse(w, "fg-status.html", data); err != nil {
-		h.serverError(w, err)
+		h.serverError(w, r, err)
 	}
 }
 
@@ -81,10 +79,10 @@ func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error Parsing query", http.StatusBadRequest)
 		return
 	}
-	result := server.Execute(q, h.app.GetIndexes())
+	result := server.Execute(r.Context(), h.app.GetLogger(), q, h.app.GetIndexes())
 
 	if err := templates.WriteResponse(w, "fg-logs.html", result); err != nil {
-		h.serverError(w, err)
+		h.serverError(w, r, err)
 	}
 }
 
@@ -106,7 +104,7 @@ func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
 
 	line, err := server.ReadLine(file, offset)
 	if err != nil {
-		h.serverError(w, err)
+		h.serverError(w, r, err)
 		return
 	}
 
@@ -154,7 +152,7 @@ func parseQuery(r *http.Request, pageSize int) (server.Query, error) {
 	return q, nil
 }
 
-func (h *Handler) serverError(w http.ResponseWriter, err error) {
-	h.app.GetLogger().Error(context.Background(), "handler error", "err", err)
-	http.Error(w, fmt.Sprintf("internal error: %v", err), http.StatusInternalServerError)
+func (h *Handler) serverError(w http.ResponseWriter, r *http.Request, err error) {
+	h.app.GetLogger().Error(r.Context(), "internal server error", "error", err.Error(), "path", r.URL.Path)
+	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 }

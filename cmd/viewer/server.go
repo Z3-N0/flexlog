@@ -34,14 +34,16 @@ func start(params *Params, logger *flexlog.Logger) error {
 	}
 
 	var scan server.ScanResult
+	logger.Debug(ctx, "scanning path", "path", params.Path)
 	if info.IsDir() {
-		scan, err = server.ScanDir(params.Path)
+		scan, err = server.ScanDir(ctx, logger, params.Path)
 	} else {
 		scan, err = server.ScanFile(params.Path)
 	}
 	if err != nil {
 		return fmt.Errorf("scan failed: %w", err)
 	}
+	logger.Info(ctx, "scan complete", "files_found", len(scan.Files))
 
 	handler, err := web.Initialize(ctx, scan, logger, params.PageSize, params.Port)
 	if err != nil {

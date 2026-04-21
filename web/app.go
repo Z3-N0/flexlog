@@ -67,12 +67,11 @@ func (a *App) index(ctx context.Context) {
 		}
 	}
 
+	a.logger.Debug(ctx, "starting background indexing", "count", len(files))
 	// This blocks until indexing is 100% finished
-	a.indexes = server.BuildIndex(a.scan.Files, progress)
+	a.indexes = server.BuildIndex(ctx, a.logger, a.scan.Files, progress)
 	a.ready.Store(true)
 
-	// Now that progress updates are GUARANTEED to be finished,
-	// we can safely print the rest of the UI.
 	fmt.Println() // One line of padding
 	a.logger.Info(ctx, "indexing complete", "files", len(a.scan.Files))
 

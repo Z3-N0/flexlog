@@ -2,10 +2,13 @@ package server
 
 import (
 	"bufio"
+	"context"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
+
+	"github.com/Z3-N0/flexlog"
 )
 
 // ScanResult holds discovered log files sorted by first-entry timestamp. Relative paths from --dir, sorted chronologically
@@ -14,7 +17,7 @@ type ScanResult struct {
 }
 
 // ScanDir scans a directory for .log files and sorts them by first-entry timestamp.
-func ScanDir(dir string) (ScanResult, error) {
+func ScanDir(ctx context.Context, logger *flexlog.Logger, dir string) (ScanResult, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return ScanResult{}, err
@@ -36,7 +39,7 @@ func ScanDir(dir string) (ScanResult, error) {
 		}
 
 		rel := filepath.Join(dir, e.Name())
-		t := firstEntryTime(rel)
+		t := firstEntryTime(ctx, logger, rel)
 		if t.IsZero() {
 			// fall back to file mtime
 			if info, err := e.Info(); err == nil {
@@ -72,7 +75,7 @@ func ScanFile(path string) (ScanResult, error) {
 }
 
 // firstEntryTime reads the first parseable line of a file and returns its timestamp, zero time if no parseable line is found.
-func firstEntryTime(path string) time.Time {
+func firstEntryTime(ctx context.Context, logger *flexlog.Logger, path string) time.Time {
 	f, err := os.Open(path)
 	if err != nil {
 		return time.Time{}
@@ -83,7 +86,7 @@ func firstEntryTime(path string) time.Time {
 	scanner.Buffer(make([]byte, 256*1024), 256*1024)
 
 	for scanner.Scan() {
-		entry := ParseLine(scanner.Bytes(), path, 0)
+		entry := ParseLine(ctx, logger, scanner.Bytes(), path, 0)
 		if !entry.Malformed && !entry.Timestamp.IsZero() {
 			return entry.Timestamp
 		}

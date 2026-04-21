@@ -2,9 +2,12 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"math"
 	"strconv"
 	"time"
+
+	"github.com/Z3-N0/flexlog"
 )
 
 // LogEntry represents a single parsed log line.
@@ -20,7 +23,7 @@ type LogEntry struct {
 }
 
 // Sets Malformed = true if the line cannot be parsed instead of returning an error, it will still be visible in UI instead of being dropped
-func ParseLine(line []byte, source string, offset int64) LogEntry {
+func ParseLine(ctx context.Context, logger *flexlog.Logger, line []byte, source string, offset int64) LogEntry {
 	entry := LogEntry{
 		Source: source,
 		Offset: offset,

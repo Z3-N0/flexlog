@@ -1,9 +1,9 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/Z3-N0/flexlog"
@@ -44,17 +44,21 @@ func parseArgs() (*Params, error) {
 }
 
 func main() {
+	ctx := context.Background()
+	logger := flexlog.New(flexlog.WithTimeFormat(flexlog.TimeKitchen))
+	defer logger.Close()
+
+
 	params, err := parseArgs()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "flexlog-viewer: %v\n", err)
+		logger.Error(ctx, "failed to parse arguments", "error", err.Error())
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	logger := flexlog.New()
-	defer logger.Close()
+	logger.Info(ctx, "starting flexlog-viewer", "path", params.Path, "port", params.Port)
 
 	if err := start(params, logger); err != nil {
-		log.Fatalf("flexlog-viewer: %v", err)
+		logger.Fatal(ctx, "application failed", "error", err.Error())
 	}
 }

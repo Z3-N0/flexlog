@@ -2,9 +2,12 @@ package server
 
 import (
 	"bufio"
+	"context"
 	"os"
 	"runtime"
 	"sync"
+
+	"github.com/Z3-N0/flexlog"
 )
 
 // FileIndex holds the byte offsets for every line in a single log file.
@@ -20,7 +23,7 @@ type ProgressFunc func(file string, linesIndexed int)
 const progressInterval = 1000
 
 // BuildIndex indexes all files in the provided list concurrently and returns a map keyed by relative file path.
-func BuildIndex(files []string, progress ProgressFunc) map[string]*FileIndex {
+func BuildIndex(ctx context.Context, logger *flexlog.Logger, files []string, progress ProgressFunc) map[string]*FileIndex {
 	results := make(map[string]*FileIndex, len(files))
 	var mu sync.Mutex
 
@@ -28,6 +31,8 @@ func BuildIndex(files []string, progress ProgressFunc) map[string]*FileIndex {
 	if workers > len(files) {
 		workers = len(files)
 	}
+
+	logger.Debug(ctx, "starting parallel indexer", "workers", workers, "files", len(files))
 
 	fileCh := make(chan string, len(files))
 	for _, f := range files {
@@ -41,7 +46,7 @@ func BuildIndex(files []string, progress ProgressFunc) map[string]*FileIndex {
 		go func() {
 			defer wg.Done()
 			for path := range fileCh {
-				idx := indexFile(path, progress)
+				idx := indexFile(ctx, logger, path, progress)
 				mu.Lock()
 				results[path] = idx
 				mu.Unlock()
@@ -54,7 +59,7 @@ func BuildIndex(files []string, progress ProgressFunc) map[string]*FileIndex {
 }
 
 // indexFile does a single linear scan of the file, recording the byte offset of each line.
-func indexFile(path string, progress ProgressFunc) *FileIndex {
+func indexFile(ctx context.Context, logger *flexlog.Logger, path string, progress ProgressFunc) *FileIndex {
 	idx := &FileIndex{
 		Path:    path,
 		Offsets: make([]int64, 0, 1024),
@@ -62,6 +67,7 @@ func indexFile(path string, progress ProgressFunc) *FileIndex {
 
 	f, err := os.Open(path)
 	if err != nil {
+		logger.Error(ctx, "failed to open file for indexing", "path", path, "error", err.Error())
 		return idx
 	}
 	defer f.Close()
@@ -78,6 +84,10 @@ func indexFile(path string, progress ProgressFunc) *FileIndex {
 		if progress != nil && idx.Count%progressInterval == 0 {
 			progress(path, idx.Count)
 		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		logger.Warn(ctx, "scanner error during indexing", "path", path, "error", err.Error())
 	}
 
 	// final progress update

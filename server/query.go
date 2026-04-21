@@ -3,12 +3,15 @@ package server
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"io"
 	"os"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Z3-N0/flexlog"
 )
 
 // Query holds all filter and pagination parameters for a log search.
@@ -34,7 +37,7 @@ type QueryResult struct {
 }
 
 // Execute runs the query across all indexed files concurrently and returns a paginated result.
-func Execute(q Query, indexes map[string]*FileIndex) QueryResult {
+func Execute(ctx context.Context, logger *flexlog.Logger, q Query, indexes map[string]*FileIndex) QueryResult {
 	if q.Page < 1 {
 		q.Page = 1
 	}
@@ -56,7 +59,7 @@ func Execute(q Query, indexes map[string]*FileIndex) QueryResult {
 		wg.Add(1)
 		go func(idx *FileIndex) {
 			defer wg.Done()
-			matches := scanFile(idx, q)
+			matches := scanFile(ctx, logger, idx, q)
 			mu.Lock()
 			all = append(all, matches...)
 			mu.Unlock()
@@ -97,7 +100,7 @@ func Execute(q Query, indexes map[string]*FileIndex) QueryResult {
 }
 
 // scanFile scans a single indexed file and returns all matching entries.
-func scanFile(idx *FileIndex, q Query) []LogEntry {
+func scanFile(ctx context.Context, logger *flexlog.Logger, idx *FileIndex, q Query) []LogEntry {
 	f, err := os.Open(idx.Path)
 	if err != nil {
 		return nil
@@ -127,7 +130,7 @@ func scanFile(idx *FileIndex, q Query) []LogEntry {
 			continue
 		}
 
-		entry := ParseLine(line, idx.Path, offset)
+		entry := ParseLine(ctx, logger, line, idx.Path, offset)
 
 		// malformed filter
 		if entry.Malformed && !q.ShowMalformed {
