@@ -1,0 +1,22 @@
+web/templates/templates.go
+  h_160bcf5600f276 4,49-52,55-56
+server/query.go
+  h_160bcf5600f276 4,6-7,101-107,113-117,119-120,123
+web/templates/fg-leftbar.html
+  h_160bcf5600f276 82
+web/templates/fg-filters.html
+  h_160bcf5600f276 138
+web/static/input.css
+  h_160bcf5600f276 12,14-21,80,118-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "c7db28d2d592181e8369a53d883ed8184b771816",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
