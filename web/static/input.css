@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../templates/**/*.html";
 
 /* #region THEME TOKENS */
 /* Dark is default - :root defines dark values.
