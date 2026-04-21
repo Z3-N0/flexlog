@@ -48,7 +48,6 @@ func main() {
 	logger := flexlog.New(flexlog.WithTimeFormat(flexlog.TimeKitchen))
 	defer logger.Close()
 
-
 	params, err := parseArgs()
 	if err != nil {
 		logger.Error(ctx, "failed to parse arguments", "error", err.Error())
