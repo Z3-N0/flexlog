@@ -38,6 +38,7 @@ func ParseLine(ctx context.Context, logger *flexlog.Logger, line []byte, source 
 
 	pos := 1 // skip opening '{'
 	n := len(line)
+	closed := false
 
 	for pos < n {
 		// skip whitespace
@@ -46,6 +47,7 @@ func ParseLine(ctx context.Context, logger *flexlog.Logger, line []byte, source 
 			break
 		}
 		if line[pos] == '}' {
+			closed = true
 			break
 		}
 
@@ -98,6 +100,11 @@ func ParseLine(ctx context.Context, logger *flexlog.Logger, line []byte, source 
 		if pos < n && line[pos] == ',' {
 			pos++
 		}
+	}
+
+	if !closed {
+		entry.Malformed = true
+		return entry
 	}
 
 	return entry
