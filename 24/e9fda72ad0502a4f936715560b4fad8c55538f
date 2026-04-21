@@ -1,0 +1,30 @@
+cmd/viewer/server.go
+  h_160bcf5600f276 37,39,46
+server/indexer.go
+  h_160bcf5600f276 5,9-10,26,35-36,49,62,70,89-92
+server/scanner.go
+  h_160bcf5600f276 5,10-11,20,42,78,89
+.gitignore
+  h_160bcf5600f276 25
+web/handlers/handlers.go
+  h_160bcf5600f276 34,36,48,56,66,82,85,107,155-157
+server/parser.go
+  h_160bcf5600f276 5,9-10,26
+web/app.go
+  h_160bcf5600f276 70,72
+server/query.go
+  h_160bcf5600f276 6,13-14,40,62,103,133
+cmd/viewer/main.go
+  h_160bcf5600f276 4,47-51,54,59,62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "24e9fda72ad0502a4f936715560b4fad8c55538f",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
