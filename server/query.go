@@ -1,7 +1,10 @@
 package server
 
 import (
+	"bufio"
 	"bytes"
+	"io"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -95,16 +98,29 @@ func Execute(q Query, indexes map[string]*FileIndex) QueryResult {
 
 // scanFile scans a single indexed file and returns all matching entries.
 func scanFile(idx *FileIndex, q Query) []LogEntry {
+	f, err := os.Open(idx.Path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+
+	reader := bufio.NewReaderSize(f, 256*1024)
 	searchTerm := bytes.ToLower([]byte(q.Search))
 	levelSet := toLevelSet(q.Levels)
 
 	var matches []LogEntry
 
-	for i, offset := range idx.Offsets {
-		line, err := ReadLine(idx.Path, offset)
-		if err != nil {
+	for _, offset := range idx.Offsets {
+		if _, err := f.Seek(offset, io.SeekStart); err != nil {
 			continue
 		}
+		reader.Reset(f)
+
+		line, err := reader.ReadBytes('\n')
+		if err != nil && len(line) == 0 {
+			continue
+		}
+		line = bytes.TrimRight(line, "\n\r")
 
 		// substring filter on raw line
 		if len(searchTerm) > 0 && !bytes.Contains(bytes.ToLower(line), searchTerm) {
@@ -112,7 +128,6 @@ func scanFile(idx *FileIndex, q Query) []LogEntry {
 		}
 
 		entry := ParseLine(line, idx.Path, offset)
-		_ = i
 
 		// malformed filter
 		if entry.Malformed && !q.ShowMalformed {
