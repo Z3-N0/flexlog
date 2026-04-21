@@ -14,11 +14,13 @@ const defaultPort = 8080
 type Params struct {
 	Path string
 	Port int
+	PageSize int
 }
 
 func parseArgs() (*Params, error) {
 	path := flag.String("path", "", "path to a log file or directory of log files")
 	port := flag.Int("port", defaultPort, "port to serve the viewer on")
+	pageSize := flag.Int("page-size", 50, "number of log entries per page")
 	flag.Parse()
 
 	if *path == "" {
@@ -30,10 +32,14 @@ func parseArgs() (*Params, error) {
 	if *port < 1 || *port > 65535 {
 		return nil, fmt.Errorf("invalid port: %d", *port)
 	}
+	if *pageSize < 1 || *pageSize > 1000 {
+		return nil, fmt.Errorf("invalid page-size: %d (must be 1–1000)", *pageSize)
+	}
 
 	return &Params{
 		Path: *path,
 		Port: *port,
+		PageSize: *pageSize,
 	}, nil
 }
 

@@ -43,7 +43,7 @@ func start(params *Params, logger *flexlog.Logger) error {
 		return fmt.Errorf("scan failed: %w", err)
 	}
 
-	handler, err := web.Initialize(ctx, scan, logger)
+	handler, err := web.Initialize(ctx, scan, logger, params.PageSize)
 	if err != nil {
 		return fmt.Errorf("web init failed: %w", err)
 	}

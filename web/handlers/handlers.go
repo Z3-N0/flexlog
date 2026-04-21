@@ -19,6 +19,7 @@ type ViewerApp interface {
 	GetIndexes() map[string]*server.FileIndex
 	GetScan() server.ScanResult
 	GetLogger() *flexlog.Logger
+	GetPageSize() int
 }
 
 // Handler holds a reference to the live app state.
@@ -75,7 +76,7 @@ func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	q := parseQuery(r)
+	q := parseQuery(r, h.app.GetPageSize())
 	result := server.Execute(q, h.app.GetIndexes())
 
 	if err := templates.WriteResponse(w, "fg-logs.html", result); err != nil {
@@ -110,7 +111,7 @@ func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
 }
 
 // parseQuery builds a Query from request URL params.
-func parseQuery(r *http.Request) server.Query {
+func parseQuery(r *http.Request, pageSize int) server.Query {
 	r.ParseForm()
 
 	q := server.Query{
@@ -120,7 +121,7 @@ func parseQuery(r *http.Request) server.Query {
 		Files:         r.Form["file"],
 		ShowMalformed: r.FormValue("malformed") == "true",
 		SortDesc:      r.FormValue("desc") != "false",
-		PageSize:      50,
+		PageSize:      pageSize,
 	}
 
 	if p := r.FormValue("page"); p != "" {

@@ -17,21 +17,25 @@ type App struct {
 	logger  *flexlog.Logger
 	indexed atomic.Int64
 	ready   atomic.Bool
+	pageSize int
 }
 
 // Initialize sets up the App, parses templates, starts background indexing and returns an http.Handler.
-func Initialize(ctx context.Context, scan server.ScanResult, logger *flexlog.Logger) (http.Handler, error) {
+func Initialize(ctx context.Context, scan server.ScanResult, logger *flexlog.Logger, pageSize int) (http.Handler, error) {
 	templates.Initialize()
 
 	app := &App{
 		scan:   scan,
 		logger: logger,
+		pageSize: pageSize,
 	}
 
 	go app.index(ctx)
 
 	return app.Routes(), nil
 }
+
+func (a *App) GetPageSize() int { return a.pageSize }
 
 // index runs BuildIndex in the background and marks the app ready when done.
 func (a *App) index(ctx context.Context) {
