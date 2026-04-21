@@ -46,12 +46,12 @@ func Initialize() {
 
 // WriteResponse writes an executed template to the response writer.
 func WriteResponse(w http.ResponseWriter, name string, data any) error {
-    var buf bytes.Buffer
-    if err := Templates.ExecuteTemplate(&buf, name, data); err != nil {
-        return err
-    }
-    w.Header().Set("Content-Type", "text/html; charset=utf-8")
-    w.Header().Set("Cache-Control", "no-cache")
-    _, err := buf.WriteTo(w)
-    return err
+	var buf bytes.Buffer
+	if err := Templates.ExecuteTemplate(&buf, name, data); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache")
+	_, err := buf.WriteTo(w)
+	return err
 }
