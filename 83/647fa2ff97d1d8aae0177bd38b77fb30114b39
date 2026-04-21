@@ -1,0 +1,14 @@
+server/parser_test.go
+  h_160bcf5600f276 32-34,37-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "83647fa2ff97d1d8aae0177bd38b77fb30114b39",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
