@@ -1,0 +1,18 @@
+web/app.go
+  h_160bcf5600f276 5,7,23,27,34,46-54,56-67,70,73-76,78-87
+cmd/viewer/server.go
+  h_160bcf5600f276 46
+web/handlers/handlers.go
+  h_160bcf5600f276 114-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "16fe4232458beb90c599b744f07310d79376e40d",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
