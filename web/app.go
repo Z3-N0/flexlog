@@ -2,7 +2,9 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"sync"
 	"sync/atomic"
 
 	"github.com/Z3-N0/flexlog"
@@ -18,16 +20,18 @@ type App struct {
 	indexed  atomic.Int64
 	ready    atomic.Bool
 	pageSize int
+	port     int
 }
 
 // Initialize sets up the App, parses templates, starts background indexing and returns an http.Handler.
-func Initialize(ctx context.Context, scan server.ScanResult, logger *flexlog.Logger, pageSize int) (http.Handler, error) {
+func Initialize(ctx context.Context, scan server.ScanResult, logger *flexlog.Logger, pageSize int, port int) (http.Handler, error) {
 	templates.Initialize()
 
 	app := &App{
 		scan:     scan,
 		logger:   logger,
 		pageSize: pageSize,
+		port:     port,
 	}
 
 	go app.index(ctx)
@@ -39,14 +43,48 @@ func (a *App) GetPageSize() int { return a.pageSize }
 
 // index runs BuildIndex in the background and marks the app ready when done.
 func (a *App) index(ctx context.Context) {
-	progress := func(file string, linesIndexed int) {
-		a.indexed.Store(int64(linesIndexed))
-		a.logger.Info(ctx, "indexing", "file", file, "lines", linesIndexed)
+	files := a.scan.Files
+	counts := make(map[string]int, len(files))
+	var mu sync.Mutex // Add this to prevent interleaved prints
+
+	// Initial print to set up the lines
+	for _, f := range files {
+		fmt.Printf("  %-40s 0 lines\n", f)
 	}
 
+	progress := func(file string, linesIndexed int) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		a.indexed.Add(int64(linesIndexed - counts[file]))
+		counts[file] = linesIndexed
+
+		// Move up to the start of our list
+		fmt.Printf("\033[%dA", len(files))
+		for _, f := range files {
+			// Clear line and reprint
+			fmt.Printf("\r\033[K  %-40s %d lines\n", f, counts[f])
+		}
+	}
+
+	// This blocks until indexing is 100% finished
 	a.indexes = server.BuildIndex(a.scan.Files, progress)
 	a.ready.Store(true)
+
+	// Now that progress updates are GUARANTEED to be finished,
+	// we can safely print the rest of the UI.
+	fmt.Println() // One line of padding
 	a.logger.Info(ctx, "indexing complete", "files", len(a.scan.Files))
+
+	fmt.Print(`
+ ______   __         ______     __  __     __         ______     ______
+/\  ___\ /\ \       /\  ___\   /\_\_\_\   /\ \       /\  __ \   /\  ___\
+\ \  __\ \ \ \____  \ \  __\   \/_/\_\/_  \ \ \____  \ \ \/\ \  \ \ \__ \
+ \ \_\    \ \_____\  \ \_____\   /\_\/\_\  \ \_____\  \ \_____\  \ \_____\
+  \/_/     \/_____/   \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_____/
+
+`)
+	fmt.Printf("\033[1m\033[38;5;135m  ▶  viewer live at http://localhost:%d\033[0m\n\n", a.port)
 }
 
 // IsReady returns true when all files are fully indexed.

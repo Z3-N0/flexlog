@@ -43,7 +43,7 @@ func start(params *Params, logger *flexlog.Logger) error {
 		return fmt.Errorf("scan failed: %w", err)
 	}
 
-	handler, err := web.Initialize(ctx, scan, logger, params.PageSize)
+	handler, err := web.Initialize(ctx, scan, logger, params.PageSize, params.Port)
 	if err != nil {
 		return fmt.Errorf("web init failed: %w", err)
 	}
@@ -61,15 +61,6 @@ func start(params *Params, logger *flexlog.Logger) error {
 	grp, grpCtx := errgroup.WithContext(ctx)
 
 	grp.Go(func() error {
-		fmt.Print(`
- ______   __         ______     __  __     __         ______     ______
-/\  ___\ /\ \       /\  ___\   /\_\_\_\   /\ \       /\  __ \   /\  ___\
-\ \  __\ \ \ \____  \ \  __\   \/_/\_\/_  \ \ \____  \ \ \/\ \  \ \ \__ \
- \ \_\    \ \_____\  \ \_____\   /\_\/\_\  \ \_____\  \ \_____\  \ \_____\
-  \/_/     \/_____/   \/_____/   \/_/\/_/   \/_____/   \/_____/   \/_____/
-
- viewer - http://localhost:8080
-`)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return fmt.Errorf("server error: %w", err)
 		}

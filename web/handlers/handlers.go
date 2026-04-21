@@ -111,10 +111,8 @@ func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(line)
-	if err != nil {
-		h.serverError(w, err)
-		return
+	if _, err = w.Write(line); err != nil {
+		h.app.GetLogger().Error(r.Context(), "failed to write response", "err", err)
 	}
 }
 
