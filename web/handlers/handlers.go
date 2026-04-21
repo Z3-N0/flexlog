@@ -76,7 +76,11 @@ func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	q := parseQuery(r, h.app.GetPageSize())
+	q, err := parseQuery(r, h.app.GetPageSize())
+	if err != nil {
+		http.Error(w, "Error Parsing query", http.StatusBadRequest)
+		return
+	}
 	result := server.Execute(q, h.app.GetIndexes())
 
 	if err := templates.WriteResponse(w, "fg-logs.html", result); err != nil {
@@ -107,14 +111,22 @@ func (h *Handler) HandleRaw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(line)
+	_, err = w.Write(line)
+	if err != nil {
+		h.serverError(w, err)
+		return
+	}
 }
 
 // parseQuery builds a Query from request URL params.
-func parseQuery(r *http.Request, pageSize int) server.Query {
-	r.ParseForm()
+func parseQuery(r *http.Request, pageSize int) (server.Query, error) {
+	q := server.Query{}
+	err := r.ParseForm()
+	if err != nil {
+		return q, err
+	}
 
-	q := server.Query{
+	q = server.Query{
 		Search:        r.FormValue("search"),
 		TraceID:       r.FormValue("trace_id"),
 		Levels:        r.Form["level"],
@@ -141,7 +153,7 @@ func parseQuery(r *http.Request, pageSize int) server.Query {
 		}
 	}
 
-	return q
+	return q, nil
 }
 
 func (h *Handler) serverError(w http.ResponseWriter, err error) {
