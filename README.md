@@ -179,11 +179,99 @@ log := flexlog.New()
 defer log.Close()
 ```
 
+---
+
+## Log Viewer
+
+Flexlog ships with a self-hosted web UI for browsing and filtering your logs. It is distributed as a single binary - no runtime dependencies, no installation.
+
+### Download
+
+Grab the latest binary for your platform from the [Releases](https://github.com/Z3-N0/flexlog/releases/latest) page.
+
+| Platform      | File                                  |
+| ------------- | ------------------------------------- |
+| Linux (amd64) | `flexlog-viewer-linux-amd64`          |
+| macOS (amd64) | `flexlog-viewer-darwin-amd64`         |
+| macOS (arm64) | `flexlog-viewer-darwin-arm64`         |
+| Windows       | `flexlog-viewer-windows-amd64.exe` ⚠️ |
+
+> ⚠️ Windows support is untested. It may work, but is not officially supported yet.
+
+On macOS and Linux, make the binary executable before running:
+
+```bash
+chmod +x flexlog-viewer-linux-amd64
+```
+
+### Usage
+
+Point the viewer at a directory containing `.log` files:
+
+```bash
+./flexlog-viewer --path ./logs
+```
+
+Then open your browser at `http://localhost:8080`.
+
+### Flags
+
+| Flag          | Default | Description                                     |
+| ------------- | ------- | ----------------------------------------------- |
+| `--path`      | -       | **Required.** Directory containing `.log` files |
+| `--port`      | `8080`  | Port to serve the UI on                         |
+| `--page-size` | `50`    | Number of log entries shown per page            |
+
+### Features
+
+- Indexes all `.log` files in the given directory at startup - 100k entries in under a second
+- Filter by log level, time range, and substring match
+- Sort by newest or oldest
+- Toggle individual log files on or off - all files selected by default
+- Show or hide malformed log entries
+- All filtering and sorting is instantaneous
+
+### Building from Source
+
+You'll need Go 1.25+ and the [Tailwind CSS standalone CLI](https://tailwindcss.com/blog/standalone-cli).
+
+**1. Regenerate the CSS** (only needed if you change HTML or templates):
+
+```bash
+./tailwindcss -i web/static/input.css -o web/static/tailwind.min.css --minify
+```
+
+**2. Build the binary:**
+
+```bash
+go build -o flexlog-viewer ./cmd/viewer
+```
+
+To cross-compile for a specific platform:
+
+```bash
+# Linux
+GOOS=linux GOARCH=amd64 go build -o flexlog-viewer-linux-amd64 ./cmd/viewer
+
+# macOS (Intel)
+GOOS=darwin GOARCH=amd64 go build -o flexlog-viewer-darwin-amd64 ./cmd/viewer
+
+# macOS (Apple Silicon)
+GOOS=darwin GOARCH=arm64 go build -o flexlog-viewer-darwin-arm64 ./cmd/viewer
+
+# Windows
+GOOS=windows GOARCH=amd64 go build -o flexlog-viewer-windows-amd64.exe ./cmd/viewer
+```
+
+> The generated `web/static/tailwind.min.css` is committed to the repository, so the Tailwind CLI is only needed if you modify the UI templates. Most contributors can skip step 1 entirely.
+
+---
+
 ## Roadmap
 
 - **v1** - JSON output to stdout ✅
 - **v1.5** - Pluggable sinks, configurable timestamp format, fatal hook ✅
-- **v2** - Web-based log viewer, searchable and sortable, shipped as a single binary
+- **v2** - Web-based log viewer, searchable and sortable, shipped as a single binary ✅
 
 ## License
 
