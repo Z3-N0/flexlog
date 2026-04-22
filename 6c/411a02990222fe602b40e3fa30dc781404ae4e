@@ -1,0 +1,14 @@
+.github/workflows/release.yml
+  h_160bcf5600f276 35-36,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "6c411a02990222fe602b40e3fa30dc781404ae4e",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
