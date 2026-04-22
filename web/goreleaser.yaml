@@ -30,7 +30,6 @@ archives:
   - id: flexlog-viewer
     builds:
       - flexlog-viewer
-    # Produces e.g. flexlog-viewer-linux-amd64.tar.gz
     name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
     format_overrides:
       - goos: windows
