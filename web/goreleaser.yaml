@@ -1,0 +1,51 @@
+version: 2
+
+project_name: flexlog-viewer
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: flexlog-viewer
+    main: ./cmd/viewer
+    binary: flexlog-viewer
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Exclude windows/arm64 - untested and unlikely to be needed
+    ignore:
+      - goos: windows
+        goarch: arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+
+archives:
+  - id: flexlog-viewer
+    builds:
+      - flexlog-viewer
+    # Produces e.g. flexlog-viewer-linux-amd64.tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: Z3-N0
+    name: flexlog
+  draft: false
+  prerelease: auto
+  footer: |
+    > ⚠️ Windows support is untested. It may work, but is not officially supported yet.
+    >
+    > See the [README](https://github.com/Z3-N0/flexlog#log-viewer) for usage and flags.

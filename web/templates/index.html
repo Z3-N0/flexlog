@@ -1,0 +1,34 @@
+{{ define "index.html" }}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="flexlog viewer" />
+    <title>flexlog viewer</title>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/tailwind.min.css" />
+
+    <!-- Alpine -->
+    <script src="/static/alpine.min.js" defer></script>
+
+    <!-- HTMX -->
+    <script src="/static/htmx.min.js" defer></script>
+
+    <!-- App -->
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body
+    class="flex justify-start items-start w-screen min-w-7xl h-screen min-h-[720px] overflow-hidden transition-all duration-300"
+  >
+    <div
+      id="outer-fragment"
+      class="flex justify-start w-full min-w-7xl h-full min-h-[720px]"
+      data-hx-get="/layout"
+      data-hx-trigger="load"
+      data-hx-swap="innerHTML"
+    ></div>
+  </body>
+</html>
+{{ end }}

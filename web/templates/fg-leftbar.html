@@ -1,0 +1,134 @@
+{{ define "fg-leftbar.html" }}
+<div
+  id="leftbar"
+  x-data="leftbar"
+  x-init="initLeftbar()"
+  class="flex flex-col flex-none overflow-hidden transition-[width] duration-200 ease-out border-r border-(--border) bg-(--bg-surface) gap-4"
+  :class="expanded ? 'w-[220px]' : 'w-12'"
+>
+  <!-- Header -->
+  <div
+    class="flex justify-end items-center self-stretch flex-none px-2 py-4 gap-2"
+  >
+    <!-- collapse: visible when fully expanded -->
+    <button
+      x-show="isExpanded()"
+      type="button"
+      aria-label="collapse sidebar"
+      class="flex items-center justify-center flex-none w-7 h-7 rounded border border-(--border) text-(--text-muted) transition-colors duration-150 hover:text-(--text-primary) hover:border-(--text-muted)"
+      @click="collapse()"
+    >
+      {{ template "icon-chevron-left.svg" }}
+    </button>
+
+    <!-- expand: visible when fully collapsed -->
+    <button
+      x-show="isCollapsed()"
+      type="button"
+      aria-label="expand sidebar"
+      class="flex items-center justify-center flex-none w-7 h-7 rounded border border-(--border) text-(--text-muted) transition-colors duration-150 hover:text-(--text-primary) hover:border-(--text-muted)"
+      @click="expand()"
+    >
+      {{ template "icon-chevron-right.svg" }}
+    </button>
+  </div>
+
+  <!-- File list -->
+  <form
+    id="files-form"
+    x-show="isExpanded()"
+    x-data="changeTracker"
+    data-btn-id="#apply-btn"
+    data-force-update="true"
+    data-hx-post="/query"
+    data-hx-include="#filters-form"
+    data-hx-target="#results-fragment"
+    data-hx-swap="innerHTML"
+    data-hx-disabled-elt="#apply-btn"
+    class="flex flex-col gap-2 max-h-[60%]"
+  >
+    <div
+      x-show="isExpanded()"
+      class="flex grow self-stretch tracking-widest justify-start uppercase px-4 py-2 text-md font-bold text-(--text-primary) border-b border-(--border)"
+    >
+      Files
+    </div>
+    <div
+      x-show="isExpanded()"
+      class="flex flex-col gap-1 px-2 pt-2 pb-4 overflow-y-auto border-b border-(--border)"
+    >
+      {{ range .Files }}
+      <label
+        class="flex items-center gap-2 self-stretch flex-none px-2 py-1.5 rounded cursor-pointer transition-colors duration-100 hover:bg-(--bg-raised)"
+      >
+        <input
+          type="checkbox"
+          name="file"
+          value="{{ . }}"
+          data-orig-value="true"
+          checked
+          class="flex-none accent-accent"
+        />
+        <span class="truncate text-xs text-(--text-muted)" title="{{ . }}"
+          >{{ . }}</span
+        >
+      </label>
+      {{ end }} {{ if not .Files }}
+      <p class="px-2 py-2 text-xs text-(--text-muted)">no files found</p>
+      {{ end }}
+    </div>
+    <!-- Apply button -->
+    <div x-show="isExpanded()" class="flex-none px-3 py-3">
+      <button id="apply-btn" type="submit" disabled class="btn-apply">
+        apply
+      </button>
+    </div>
+  </form>
+
+  <!-- Spacer pushes apply + toggle to bottom -->
+  <div class="grow"></div>
+
+  <!-- Theme toggle -->
+  <div
+    class="flex-none flex items-center justify-center px-3 py-3 border-t border-(--border)"
+    x-data="themeChanger"
+    x-init="init()"
+  >
+    <!-- collapsed: icon only -->
+    <button
+      x-show="isCollapsed()"
+      type="button"
+      class="flex items-center justify-center flex-none w-7 h-7 rounded border border-(--border) text-(--text-muted) transition-colors duration-150 hover:text-(--text-primary)"
+      :aria-label="isDark ? 'switch to light mode' : 'switch to dark mode'"
+      @click="toggle()"
+    >
+      <span x-show="isDark">{{ template "icon-moon.svg" }}</span>
+      <span x-show="!isDark">{{ template "icon-sun.svg" }}</span>
+    </button>
+
+    <!-- expanded: sun - switch - moon -->
+    <div x-show="isExpanded()" class="flex items-center gap-2">
+      <span class="flex-none text-(--text-muted)"
+        >{{ template "icon-sun.svg" }}</span
+      >
+
+      <button
+        type="button"
+        class="relative flex-none w-9 h-5 rounded-full transition-colors duration-200"
+        :class="isDark ? 'bg-(--accent)' : 'bg-(--border)'"
+        :aria-label="isDark ? 'switch to light mode' : 'switch to dark mode'"
+        @click="toggle()"
+      >
+        <span
+          class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform duration-200"
+          :class="isDark ? 'translate-x-4' : 'translate-x-0'"
+        ></span>
+      </button>
+
+      <span class="flex-none text-(--text-muted)"
+        >{{ template "icon-moon.svg" }}</span
+      >
+    </div>
+  </div>
+</div>
+{{ end }}

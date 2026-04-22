@@ -1,0 +1,155 @@
+{{ define "fg-filters.html" }}
+<div class="flex flex-col w-full h-full overflow-hidden">
+  <!-- Filters bar -->
+  <div
+    class="flex flex-col flex-none items-start gap-2 px-4 py-3 flex-wrap border-b border-solid border-(--border) bg-(--bg-surface)"
+  >
+    <div
+      class="flex flex-col flex-none self-stretch tracking-widest justify-start gap-3 uppercase text-(--text-primary)"
+    >
+      <span class="text-lg font-bold"> Flexlog Viewer</span>
+      <span class="text-sm font-medium"> Filters: </span>
+    </div>
+
+    <form
+      id="filters-form"
+      x-data="changeTracker"
+      data-btn-id="#fltr-apply-btn"
+      data-force-update="true"
+      data-hx-post="/query"
+      data-hx-include="#files-form"
+      data-hx-target="#results-fragment"
+      data-hx-swap="innerHTML"
+      data-hx-disabled-elt="#fltr-apply-btn"
+      class="flex flex-none items-start gap-3 flex-wrap"
+    >
+      <!-- Sort -->
+      <div
+        class="flex flex-col gap-1 justify-end pb-0.5"
+        x-data="{ desc: true }"
+      >
+        <label class="text-xs uppercase tracking-widest text-(--text-muted)"
+          >sort</label
+        >
+        <button
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs border border-(--border) text-(--text-muted) transition-colors duration-150 hover:border-(--accent) hover:text-(--text-primary)"
+          @click="desc = !desc; $nextTick(() => $root.querySelector('input[name=desc]').dispatchEvent(new Event('change')))"
+        >
+          <span x-text="desc ? '↓ newest' : '↑ oldest'"></span>
+          <input
+            type="hidden"
+            name="desc"
+            :value="desc"
+            data-orig-value="true"
+          />
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs uppercase tracking-widest text-(--text-muted)"
+          >search</label
+        >
+        <input
+          type="text"
+          name="search"
+          placeholder="keyword, trace id..."
+          class="px-3 py-1.5 rounded text-xs text-(--text-primary) bg-(--bg-raised) border border-(--border) outline-none transition-colors duration-150 w-56 focus:border-(--accent)"
+          x-ref="search"
+          data-orig-value=""
+        />
+      </div>
+
+      <!-- Level toggles -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs uppercase tracking-widest text-(--text-muted)"
+          >level</label
+        >
+        <div class="flex items-center gap-1" x-data="{ levels: [] }">
+          <template
+            x-for="lvl in ['TRACE','DEBUG','INFO','WARN','ERROR','FATAL']"
+            :key="lvl"
+          >
+            <button
+              type="button"
+              class="px-2 py-1 rounded text-xs font-bold tracking-wider uppercase transition-all duration-150 border"
+              :class="levels.includes(lvl) ? 'opacity-100' : 'opacity-40'"
+              :style="getLevelStyle(lvl)"
+              @click="levels.includes(lvl) ? levels = levels.filter(l => l !== lvl) : levels.push(lvl); $nextTick(() => $root.querySelector('input[name=level]').dispatchEvent(new Event('change')))"
+              x-text="lvl"
+            ></button>
+          </template>
+          <input
+            type="hidden"
+            name="level"
+            :value="levels.join(',')"
+            data-orig-value=""
+          />
+        </div>
+      </div>
+
+      <!-- From -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs uppercase tracking-widest text-(--text-muted)"
+          >from</label
+        >
+        <input
+          type="datetime-local"
+          name="from"
+          data-orig-value=""
+          class="px-3 py-1.5 rounded text-xs text-(--text-primary) bg-(--bg-raised) border border-(--border) outline-none transition-colors duration-150 focus:border-(--accent)"
+        />
+      </div>
+
+      <!-- To -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs uppercase tracking-widest text-(--text-muted)"
+          >to</label
+        >
+        <input
+          type="datetime-local"
+          name="to"
+          data-orig-value=""
+          class="px-3 py-1.5 rounded text-xs text-(--text-primary) bg-(--bg-raised) border border-(--border) outline-none transition-colors duration-150 focus:border-(--accent)"
+        />
+      </div>
+
+      <!-- Show malformed -->
+      <div class="flex flex-col gap-1 justify-end pb-0.5">
+        <label class="text-xs uppercase tracking-widest text-(--text-muted)"
+          >malformed</label
+        >
+        <label class="flex items-center gap-2 cursor-pointer py-1.5">
+          <input
+            type="checkbox"
+            name="malformed"
+            value="true"
+            data-orig-value="false"
+            class="flex-none accent-(--accent)"
+          />
+          <span class="text-xs text-(--text-muted)">show</span>
+        </label>
+      </div>
+
+      <!-- Apply -->
+      <div class="flex flex-col gap-1 justify-end pb-0.5 ml-auto">
+        <label class="text-xs uppercase tracking-widest opacity-0">apply</label>
+        <button id="fltr-apply-btn" type="submit" disabled class="btn-apply">
+          apply
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results -->
+  <div
+    id="results-fragment"
+    class="flex flex-col grow overflow-y-auto"
+    data-hx-post="/query"
+    data-hx-include="#files-form, #filters-form"
+    data-hx-trigger="load once"
+    data-hx-swap="innerHTML"
+  ></div>
+</div>
+{{ end }}

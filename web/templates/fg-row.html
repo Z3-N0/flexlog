@@ -1,0 +1,71 @@
+{{ define "row.html" }}
+<div
+  x-data="logRow"
+  class="flex flex-col w-full cursor-pointer transition-colors duration-100 hover:bg-(--bg-raised)"
+  style="border-bottom: 1px solid var(--border)"
+  @click="toggle()"
+>
+  <!-- Collapsed row -->
+  <div
+    class="grid px-4 py-2 text-xs"
+    style="grid-template-columns: 160px 80px 160px 1fr 80px"
+  >
+    <!-- Timestamp -->
+    <span class="text-(--text-muted) truncate pr-2">
+      {{ .Timestamp.Format "Jan 02, 2006 15:04:05" }}
+    </span>
+
+    <!-- Level badge -->
+    <span
+      class="font-bold uppercase truncate pr-2"
+      style="color: {{ levelColor .Level }};"
+      >{{ .Level }}</span
+    >
+    <!-- Source -->
+    <span class="text-(--text-muted) truncate pr-2" title="{{ .Source }}"
+      >{{ .Source }}</span
+    >
+
+    <!-- Message -->
+    <span class="text-(--text-primary) truncate pr-2">
+      {{ if .Malformed }}
+      <span class="text-(--level-warn)">[malformed]</span>
+      {{ else }} {{ .Message }} {{ end }}
+    </span>
+
+    <!-- Fields count -->
+    <span class="text-(--text-muted)">
+      {{ if .Fields }}{{ len .Fields }} fields{{ end }}
+    </span>
+  </div>
+
+  <!-- Expanded: raw JSON -->
+  <div
+    x-show="expanded"
+    class="px-4 pb-3 text-xs"
+    style="color: var(--text-muted); background-color: var(--bg-raised)"
+    @click.stop="toggle()"
+  >
+    <div
+      class="flex flex-wrap gap-x-4 gap-y-1 pt-2 pb-3"
+      style="border-bottom: 1px solid var(--border)"
+    >
+      {{ range $k, $v := .Fields }}
+      <span
+        ><span style="color: var(--text-muted)">{{ $k }}:</span>
+        <span style="color: var(--text-primary)">{{ $v }}</span></span
+      >
+      {{ end }}
+    </div>
+    <div
+      class="mt-2 font-mono text-xs"
+      style="color: var(--text-muted)"
+      data-hx-get="/raw?file={{ .Source }}&offset={{ .Offset }}"
+      data-hx-trigger="intersect once"
+      data-hx-swap="innerHTML"
+    >
+      loading raw...
+    </div>
+  </div>
+</div>
+{{ end }}

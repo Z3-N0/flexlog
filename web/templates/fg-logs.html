@@ -1,0 +1,64 @@
+{{ define "fg-logs.html" }}
+<div class="flex flex-col w-full h-full">
+  <!-- Count + pagination info -->
+  <div
+    class="flex items-center justify-between flex-none px-4 py-2"
+    style="border-bottom: 1px solid var(--border)"
+  >
+    <p class="text-xs text-(--text-muted)">
+      {{ .TotalMatch }} entries matched &middot; page {{ .Page }} of {{
+      .TotalPages }}
+    </p>
+    <div class="flex items-center gap-2">
+      {{ if gt .Page 1 }}
+      <button
+        type="button"
+        class="px-3 py-1 rounded text-xs border border-(--border) text-(--text-muted) hover:border-(--accent) hover:text-(--text-primary) transition-colors duration-150"
+        data-hx-post="/query?page={{ sub .Page 1 }}"
+        data-hx-target="#results-fragment"
+        data-hx-swap="innerHTML"
+      >
+        ← prev
+      </button>
+      {{ end }} {{ if lt .Page .TotalPages }}
+      <button
+        type="button"
+        class="px-3 py-1 rounded text-xs border border-(--border) text-(--text-muted) hover:border-(--accent) hover:text-(--text-primary) transition-colors duration-150"
+        data-hx-post="/query?page={{ add .Page 1 }}"
+        data-hx-target="#results-fragment"
+        data-hx-swap="innerHTML"
+      >
+        next →
+      </button>
+      {{ end }}
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="flex flex-col w-full overflow-y-auto">
+    <!-- Header -->
+    <div
+      class="grid flex-none px-4 py-2 text-xs uppercase tracking-widest text-(--text-muted) sticky top-0"
+      style="
+        grid-template-columns: 160px 80px 160px 1fr 80px;
+        background-color: var(--bg-surface);
+        border-bottom: 1px solid var(--border);
+      "
+    >
+      <span>timestamp</span>
+      <span>level</span>
+      <span>source</span>
+      <span>message</span>
+      <span>fields</span>
+    </div>
+
+    <!-- Rows -->
+    {{ range .Entries }} {{ template "row.html" . }} {{ end }} {{ if not
+    .Entries }}
+    <div class="flex items-center justify-center w-full py-16">
+      <p class="text-sm text-(--text-muted)">no logs</p>
+    </div>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
