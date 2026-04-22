@@ -32,11 +32,11 @@ jobs:
           TAILWIND_VERSION: "v4.1.3"
         run: |
           curl -sL "https://github.com/tailwindlabs/tailwindcss/releases/download/${TAILWIND_VERSION}/tailwindcss-linux-x64" \
-            -o tailwindcss
-          chmod +x tailwindcss
+            -o /tmp/tailwindcss
+          chmod +x /tmp/tailwindcss
 
       - name: Build CSS
-        run: ./tailwindcss -i web/static/input.css -o web/static/tailwind.min.css --minify
+        run: /tmp/tailwindcss -i web/static/input.css -o web/static/tailwind.min.css --minify
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
