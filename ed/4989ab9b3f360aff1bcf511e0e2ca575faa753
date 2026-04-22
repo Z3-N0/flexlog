@@ -1,0 +1,18 @@
+README.md
+  h_160bcf5600f276 182-269,274
+.github/workflows/release.yml
+  h_160bcf5600f276 15-17,19,27-33,35-45
+web/goreleaser.yaml
+  h_160bcf5600f276 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "ed4989ab9b3f360aff1bcf511e0e2ca575faa753",
+  "prompts": {},
+  "humans": {
+    "h_160bcf5600f276": {
+      "author": "Z3-N0"
+    }
+  }
+}
